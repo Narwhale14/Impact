@@ -1,7 +1,8 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, channelLink, MembershipScreeningFieldType, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { getData } = require('./utils/jsonStorage.js');
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
@@ -37,8 +38,11 @@ client.on('interactionCreate', async interaction => {
         const command = client.commands.get(interaction.commandName);
         if (command) {
             // admin check
-            if (command.adminOnly && !interaction.member.roles.cache.has(process.env.ADMIN_ROLE_ID))
+            const adminRoleData = getData('adminRole');
+            const hasAdminRole = adminRoleData ? interaction.member.roles.cache.has(adminRoleData.id) : false;
+            if (command.adminOnly && !hasAdminRole && !interaction.member.permissions.has('Administrator'))
                 return interaction.reply({ content: 'You do not have permission.', flag: 64 });
+            
             await command.execute(interaction);
         }
         return;

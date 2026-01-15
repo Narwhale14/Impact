@@ -6,7 +6,8 @@ By Narwhalle for Significant Impact
 ## How to Run
 
 1. Clone repo
-2. Create .env - `cp .env.example .env`
-3. Fill in discord bot token, bot id, and server id
-4. Deploy commands - `node deploy-commands.js`
-5. Start bot - `node index.js`
+2. run `npm install discord.js` and `npm install pg`
+3. Create .env - `cp .env.example .env`
+4. Fill in discord bot token, bot id, and server id
+5. Deploy commands - `node deploy-commands.js`
+6. Start bot - `node index.js`

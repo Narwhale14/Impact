@@ -1,0 +1,45 @@
+{
+  "verificationRole": {
+    "guild": "768525151145951262",
+    "icon": null,
+    "unicodeEmoji": null,
+    "id": "797567969294155818",
+    "name": "Verified",
+    "color": 814100,
+    "colors": {
+      "primaryColor": 814100,
+      "secondaryColor": null,
+      "tertiaryColor": null
+    },
+    "hoist": true,
+    "rawPosition": 14,
+    "permissions": "6546640449",
+    "managed": false,
+    "mentionable": false,
+    "flags": 0,
+    "tags": null,
+    "createdTimestamp": 1610225421976
+  },
+  
+  "adminRole": {
+    "guild": "768525151145951262",
+    "icon": "5572f1a31db48783873b79dd79f39c19",
+    "unicodeEmoji": null,
+    "id": "801973623484448768",
+    "name": "Server Staff",
+    "color": 0,
+    "colors": {
+      "primaryColor": 0,
+      "secondaryColor": null,
+      "tertiaryColor": null
+    },
+    "hoist": true,
+    "rawPosition": 49,
+    "permissions": "28587301666815",
+    "managed": false,
+    "mentionable": true,
+    "flags": 0,
+    "tags": null,
+    "createdTimestamp": 1611275811788
+  }
+}
