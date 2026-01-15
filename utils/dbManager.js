@@ -1,16 +1,17 @@
 const { db } = require('../database.js');
 
-async function updateGuildData(guildId, { verificationRoleId, adminRoleId }) {
+async function updateGuildData(guild, { verificationRoleId, adminRoleId }) {
     await db.query(
         `
-        INSERT INTO guild_data (guild_id, verification_role, admin_role)
-        VALUES ($1, $2, $3)
+        INSERT INTO guild_data (guild_id, verification_role, admin_role, guild_name)
+        VALUES ($1, $2, $3, $4)
         ON CONFLICT (guild_id)
         DO UPDATE SET
             verification_role = COALESCE($2, guild_data.verification_role),
-            admin_role = COALESCE($3, guild_data.admin_role)
+            admin_role = COALESCE($3, guild_data.admin_role),
+            guild_name = COALESCE($4, guild_data.guild_name)
         `,
-        [guildId, verificationRoleId || null, adminRoleId || null]
+        [guild.id, verificationRoleId || null, adminRoleId || null, guild.name]
     );
 }
 

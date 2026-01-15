@@ -12,7 +12,7 @@ module.exports = {
 
         // lazy-load db to avoid starting db on deploy
         const { updateGuildData } = require('../utils/dbManager.js');
-        await updateGuildData(interaction.guild.id, { adminRoleId: adminRole.id});
+        await updateGuildData(interaction.guild, { adminRoleId: adminRole.id});
 
         await interaction.reply({ content: 'Admin role set successfully', flag: 64 });
     }
