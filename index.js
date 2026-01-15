@@ -35,7 +35,12 @@ client.once('clientReady', async () => {
 client.on('interactionCreate', async interaction => {
     if(interaction.isChatInputCommand()) {
         const command = client.commands.get(interaction.commandName);
-        if (command) await command.execute(interaction);
+        if (command) {
+            // admin check
+            if (command.adminOnly && !interaction.member.roles.cache.has(process.env.ADMIN_ROLE_ID))
+                return interaction.reply({ content: 'You do not have permission.', flag: 64 });
+            await command.execute(interaction);
+        }
         return;
     }
 

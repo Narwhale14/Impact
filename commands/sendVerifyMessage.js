@@ -6,11 +6,8 @@ module.exports = {
         .setDescription('Sends the verification message')
         .addStringOption(option => option.setName('message').setDescription('Sends the new verification message').setRequired(true))
         .addChannelOption(option => option.setName('channel').setDescription('The channel it goes in').setRequired(true)),
+    adminOnly: true,
     async execute(interaction) {
-        // admin only
-        if (!interaction.member.roles.cache.has(process.env.ADMIN_ROLE_ID))
-            return interaction.reply({ content: 'You do not have permission.', flags: 64 });
-
         const content = interaction.options.getString('message');
         const welcomeChannel = interaction.options.getChannel('channel');
 
