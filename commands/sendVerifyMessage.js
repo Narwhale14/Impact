@@ -2,7 +2,7 @@ const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = re
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('sendverificationmessage')
+        .setName('sendverifymessage')
         .setDescription('Sends the verification message')
         .addStringOption(option => option.setName('message').setDescription('Sends the new verification message').setRequired(true))
         .addChannelOption(option => option.setName('channel').setDescription('The channel it goes in').setRequired(true)),

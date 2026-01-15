@@ -2,7 +2,7 @@ const { SlashCommandBuilder, InteractionResponseFlags } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('deleteverificationmessage')
+        .setName('deleteverifymessage')
         .setDescription('Deletes the verification message')
         .addChannelOption(option => option.setName('channel').setDescription('Channel of the verification message').setRequired(true))
         .addStringOption(option => option.setName('id').setDescription('ID of the verification message').setRequired(true)),

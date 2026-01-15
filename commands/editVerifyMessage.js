@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('editverificationmessage')
+        .setName('editverifymessage')
         .setDescription('Changes the verification message')
         .addStringOption(option => option.setName('message').setDescription('The new verification message').setRequired(true))
         .addChannelOption(option => option.setName('channel').setDescription('Channel of the verification message').setRequired(true))
