@@ -9,14 +9,14 @@ module.exports = {
     async execute(interaction) {
         // admin only
         if (!interaction.member.roles.cache.has(process.env.ADMIN_ROLE_ID))
-            return interaction.reply({ content: 'You do not have permission.', ephemeral: true });
+            return interaction.reply({ content: 'You do not have permission.', flags: 64 });
 
         const content = interaction.options.getString('message');
         const welcomeChannel = interaction.options.getChannel('channel');
 
         // invalid channel
         if(!welcomeChannel || !welcomeChannel.isTextBased())
-            return interaction.reply({ content: 'Invalid channel! '});
+            return interaction.reply({ content: 'Invalid channel!', flags: 64 });
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder().setCustomId('verify_button').setLabel('Verify').setStyle(ButtonStyle.Success)

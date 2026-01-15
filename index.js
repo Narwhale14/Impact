@@ -7,14 +7,24 @@ const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
 });
 
+// commands collection init
 client.commands = new Collection();
-
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
 for(const file of commandFiles) {
     const command = require(`./commands/${file}`);
     client.commands.set(command.data.name, command);
+}
+
+// buttons collection init
+client.buttons = new Collection();
+const buttonsPath = path.join(__dirname, 'interactions', 'buttons');
+const buttonFiles = fs.readdirSync(buttonsPath).filter(file => file.endsWith('.js'));
+
+for(const file of buttonFiles) {
+    const button = require(`./interactions/buttons/${file}`);
+    client.buttons.set(button.customId, button);
 }
 
 // ready event (bot comes online)
@@ -25,23 +35,14 @@ client.once('clientReady', async () => {
 client.on('interactionCreate', async interaction => {
     if(interaction.isChatInputCommand()) {
         const command = client.commands.get(interaction.commandName);
-        if (!command) return;
-
-        await command.execute(interaction);
+        if (command) await command.execute(interaction);
+        return;
     }
 
-    // Button interactions
-    if (interaction.isButton() && interaction.customId === 'verify_button') {
-        const role = interaction.guild.roles.cache.get(process.env.VERIFICATION_ROLE_ID);
-        if (!role) return interaction.reply({ content: 'Unable to locate "Verified" role.' });
-
-        try {
-            await interaction.member.roles.add(role);
-            await interaction.reply({ content: 'You have been verified!' });
-        } catch (err) {
-            console.error(err);
-            await interaction.reply({ content: 'Failed to assign role.' });
-        }
+    if(interaction.isButton()) {
+        const button = client.buttons.get(interaction.customId);
+        if(button) await button.execute(interaction);
+        return;
     }
 });
 
