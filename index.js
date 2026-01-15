@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const { getData } = require('./utils/jsonStorage.js');
+const { getGuildData } = require('./utils/dbManager.js');
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
@@ -38,7 +39,8 @@ client.on('interactionCreate', async interaction => {
         const command = client.commands.get(interaction.commandName);
         if (command) {
             // admin check
-            const adminRoleData = getData('adminRole');
+            const guildData = await getGuildData(interaction.guild.id);
+            const adminRoleData = guildData?.admin_role;
             const hasAdminRole = adminRoleData ? interaction.member.roles.cache.has(adminRoleData.id) : false;
             if (command.adminOnly && !hasAdminRole && !interaction.member.permissions.has('Administrator'))
                 return interaction.reply({ content: 'You do not have permission.', flag: 64 });

@@ -8,8 +8,6 @@ module.exports = {
         .addStringOption(option => option.setName('id').setDescription('ID of the verification message').setRequired(true)),
     adminOnly: true,
     async execute(interaction) {
-        if(!interaction.isChatInputCommand()) return;
-
         const channel = interaction.options.getChannel('channel');
         const verificationMessageId = await interaction.options.getString('id')
         if (!verificationMessageId) return interaction.reply({ content: 'Verification message does not exist!', flags: 64 });

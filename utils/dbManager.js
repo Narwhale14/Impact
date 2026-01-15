@@ -15,4 +15,12 @@ async function updateGuildData(guild, { verificationRoleId, adminRoleId }) {
     );
 }
 
-module.exports = { updateGuildData };
+async function getGuildData(guildId) {
+    const res = await db.query(
+        `SELECT * FROM guild_data WHERE guild_id = $1`,
+        [guildId]
+    );
+    return res.rows[0] || null;
+}
+
+module.exports = { updateGuildData, getGuildData };
