@@ -22,8 +22,7 @@ module.exports = {
             const hypixelGuild = await getGuildByName(guildName);
             if(!hypixelGuild) return interaction.editReply(`Guild **${guildName}** not found on Hypixel.`)
 
-            const hypixelGuildId = hypixelGuild._id;
-            await updateGuildColumn(interaction.guild, { hypixelGuildId });
+            await updateGuildColumn(interaction.guild, 'hypixel_guild_id', hypixelGuild._id);
 
             await interaction.editReply(`Successfully linked guild **${guildName}** to this server!`);
         } catch(err) {

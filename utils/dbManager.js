@@ -60,21 +60,28 @@ async function updateGuildColumn(guild, columnName, value) {
     try {
         // lets function accept either discord guild obj or id
         const guildId = typeof guild === 'string' ? guild : guild?.id;
-        if(!guildId) throw new Error('nullifyGuildColumn called without valid guildId');
-        if(!columnName) throw new Error('nullifyGuildColumn called without valid columnName');
+        const guildName = typeof guild === 'object' ? guild.name : null;
 
-        const columnsRes = await pool.query(
-            `SELECT column_name FROM information_schema.columns
-            WHERE table_name = 'guild_data' AND table_schema = 'public'`
+        if(!guildId) throw new Error('nullifyGuildColumn called without valid guildId');
+
+        const guildRes = await pool.query(
+            `SELECT 1 FROM guild_data WHERE discord_server_id = $1`,
+            [guildId]
         );
 
-        const allowedColumns = columnsRes.rows.map(row => row.column_name);
-        if(!allowedColumns.includes(columnName)) throw new Error(`Column "${columnName}" does not exist in guild_data`);
-
-        await pool.query(
-            `UPDATE guild_data SET ${columnName} = $1 WHERE discord_server_id = $2`,
-            [value, guildId]
-        )
+        // creates guild_data entry if didn't exist
+        if(guildRes.rowCount === 0) {
+            await pool.query(
+                `INSERT INTO guild_data (discord_server_id, discord_server_name, ${columnName})
+                VALUES ($1, $2, $3)`,
+                [guildId, guildName, value]
+            );
+        } else {
+            await pool.query(
+                `UPDATE guild_data SET ${columnName} = $1 WHERE discord_server_id = $2`,
+                [value, guildId]
+            )
+        }
     } catch(err) {
         console.error('Error nullifying guild column', err);
         throw err;
