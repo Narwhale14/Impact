@@ -9,9 +9,3 @@ needs: in game minecraft account
     hypixel guild bridge
     - sending guild messages in discord, vice versa
     - chat filter to avoid slurs and allat
-
-    linking verification
-    - user seeks to link their minecraft account
-    - bot will send the minecraft account a verification code on minecraft
-    - only user can see the code, so they can use it to safely link
-    - ensures no impersonation
