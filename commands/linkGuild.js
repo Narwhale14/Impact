@@ -1,0 +1,33 @@
+const { SlashCommandBuilder } = require('discord.js');
+const { updateGuildData, getGuildData } = require('../utils/dbManager');
+const { getGuildByName } = require('../utils/hypixelAPIManager.js');
+
+/**
+ * @command - /linkguild
+ * links in game hypixel guild to discord server
+ */
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('linkguild')
+        .setDescription('Links discord server with hypixel guild')
+        .addStringOption(option => option.setName('guild').setDescription('Guild of choice').setRequired(true)),
+    async execute(interaction) {
+        await interaction.deferReply();
+        try {
+            const existingGuildData = await getGuildData(interaction.guild.id);
+            if(existingGuildData?.hypixel_guild_id) return interaction.editReply('This servier is already linked to a Hypixel guild!');
+
+            const guildName = interaction.options.getString('guild');
+            const hypixelGuild = await getGuildByName(guildName);
+            if(!hypixelGuild) return interaction.editReply(`Guild **${guildName}** not found on Hypixel.`)
+
+            const hypixelGuildId = hypixelGuild._id;
+            await updateGuildData(interaction.guild, { hypixelGuildId });
+
+            await interaction.editReply(`Successfully linked guild **${guildName}** to this server!`);
+        } catch(err) {
+            console.error("Error fetching guild: ", err);
+            await interaction.editReply("An error occured while fetching guild");
+        }
+    }
+}

@@ -1,5 +1,10 @@
 const { SlashCommandBuilder } = require('discord.js');
+const { updateGuildData } = require('../utils/dbManager.js');
 
+/**
+ * @command - /setadminrole
+ * sets the default staff role so the bot knows who to give access to admin commands
+ */
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('setadminrole')
@@ -7,13 +12,15 @@ module.exports = {
         .addRoleOption(option => option.setName('role').setDescription('Role of choice').setRequired(true)),
     adminOnly: true,
     async execute(interaction) {
-        const adminRole = interaction.options.getRole('role');
-        if(!adminRole) return interaction.reply({ content: 'Invalid role!', flag: 64 });
+        try {
+            const adminRole = interaction.options.getRole('role');
+            if(!adminRole) return interaction.reply({ content: 'Invalid role!', flag: 64 });
 
-        // lazy-load db to avoid starting db on deploy
-        const { updateGuildData } = require('../utils/dbManager.js');
-        await updateGuildData(interaction.guild, { adminRoleId: adminRole.id});
-
-        await interaction.reply({ content: 'Admin role set successfully', flag: 64 });
+            await updateGuildData(interaction.guild, { adminRoleId: adminRole.id});
+            await interaction.reply({ content: `Admin role set successfully to <@&${adminRole.id}>!`, allowedMentions: { roles: [] } });
+        } catch(err) {
+            console.log('Error updating guild data: ', err);
+            await interaction.editReply("An error occured while setting admin role!");
+        }
     }
 }

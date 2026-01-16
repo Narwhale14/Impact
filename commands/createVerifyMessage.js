@@ -1,5 +1,10 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
+/**
+ * @command - /createverifymessage
+ * creates a message in a specific channel that has a button to add
+ * the saved verification role via /setverifyrole
+ */
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('createverifymessage')
@@ -11,7 +16,6 @@ module.exports = {
         const content = interaction.options.getString('message');
         const welcomeChannel = interaction.options.getChannel('channel');
 
-        // invalid channel
         if(!welcomeChannel || !welcomeChannel.isTextBased())
             return interaction.reply({ content: 'Invalid channel!', flags: 64 });
 
@@ -19,7 +23,6 @@ module.exports = {
             new ButtonBuilder().setCustomId('verify_button').setLabel('Verify').setStyle(ButtonStyle.Success)
         );
         
-        // send message, save unique message ID
         const messagePayload = {content, components: [row]};
         const message = await welcomeChannel.send(messagePayload);
         await interaction.reply({ content: `Verification message created successfully in ${welcomeChannel}` });

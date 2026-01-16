@@ -1,5 +1,9 @@
 const { SlashCommandBuilder } = require('discord.js');
 
+/**
+ * @command - /editverifymessage
+ * directly edits a verification message in a specific channel by ID and channel
+ */
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('editverifymessage')

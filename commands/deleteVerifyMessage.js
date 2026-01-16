@@ -1,5 +1,9 @@
 const { SlashCommandBuilder, InteractionResponseFlags } = require('discord.js');
 
+/**
+ * @command - /deleteverifymessage
+ * removes a verification message in a specific channel by ID and channel
+ */
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('deleteverifymessage')

@@ -1,19 +1,22 @@
 const { pool } = require('../database.js');
 
+/**
+ * Helper function that updates guild data, accepting 1 or more of the table contents
+ * @param {*} guild guild object (interaction.guild)
+ * @param {*} param1 table contents
+ */
 async function updateGuildData(guild, { verificationRoleId, adminRoleId, roleMappings, hypixelGuildId }) {
     try {
         await pool.query(
-            `
-            INSERT INTO guild_data (discord_server_id, discord_server_name, verification_role, admin_role, role_mappings, hypixel_guild_id)
+            `INSERT INTO guild_data (discord_server_id, discord_server_name, verification_role, admin_role, role_mappings, hypixel_guild_id)
             VALUES ($1, $2, $3, $4, $5, $6)
             ON CONFLICT (discord_server_id)
             DO UPDATE SET
-                verification_role = COALESCE($2, guild_data.verification_role),
-                admin_role = COALESCE($3, guild_data.admin_role),
-                discord_server_name = COALESCE($4, guild_data.discord_server_name),
+                discord_server_name = COALESCE($2, guild_data.discord_server_name),
+                verification_role = COALESCE($3, guild_data.verification_role),
+                admin_role = COALESCE($4, guild_data.admin_role),
                 role_mappings = COALESCE($5, guild_data.role_mappings),
-                hypixel_guild_id = COALESCE($6, guild_data.hypixel_guild_id)
-            `,
+                hypixel_guild_id = COALESCE($6, guild_data.hypixel_guild_id)`,
             [
                 guild.id, 
                 guild.name,
@@ -29,6 +32,11 @@ async function updateGuildData(guild, { verificationRoleId, adminRoleId, roleMap
     }
 }
 
+/**
+ * Gets a piece of data from the guild_data table
+ * @param {*} guildId interaction.guild.id
+ * @returns the data
+ */
 async function getGuildData(guildId) {
     try {
         const res = await pool.query(
@@ -42,17 +50,34 @@ async function getGuildData(guildId) {
     }
 }
 
-async function getHypixelGuildId(guildId) {
+/**
+ * nullifies guild data by column
+ * @param {*} guild guild id or object (interaction.guild.id)
+ * @param {*} columnName name of column in table (see neon db or updateGuildData)
+ */
+async function nullifyGuildColumn(guild, columnName) {
     try {
-        const res = await pool.query(
-            `SELECT hypixel_guild_id FROM guild_data WHERE discord_server_id = $1`,
-            [guildId]
+        // lets function accept either discord guild obj or id
+        const guildId = typeof guild === 'string' ? guild : guild?.id;
+        if(!guildId) throw new Error('nullifyGuildColumn called without valid guildId');
+        if(!columnName) throw new Error('nullifyGuildColumn called without valid columnName');
+
+        const columnsRes = await pool.query(
+            `SELECT column_name FROM information_schema.columns
+            WHERE table_name = 'guild_data' AND table_schema = 'public'`
         );
-        return res.rows[0].hypixel_guild_id || null;
+
+        const allowedColumns = columnsRes.rows.map(row => row.column_name);
+        if(!allowedColumns.includes(columnName)) throw new Error(`Column "${columnName}" does not exist in guild_data`);
+
+        await pool.query(
+            `UPDATE guild_data SET ${columnName} = NULL WHERE discord_server_id = $1`,
+            [guildId]
+        )
     } catch(err) {
-        console.error('DB error in getHypixelGuildId: ', err);
+        console.error('Error nullifying guild column', err);
         throw err;
     }
 }
 
-module.exports = { updateGuildData, getGuildData, getHypixelGuildId };
+module.exports = { updateGuildData, getGuildData, nullifyGuildColumn };
