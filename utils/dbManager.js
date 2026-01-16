@@ -54,8 +54,9 @@ async function getGuildData(guildId) {
  * nullifies guild data by column
  * @param {*} guild guild id or object (interaction.guild.id)
  * @param {*} columnName name of column in table (see neon db or updateGuildData)
+ * @param {*} value value to set (pass null to erase)
  */
-async function nullifyGuildColumn(guild, columnName) {
+async function updateGuildColumn(guild, columnName, value) {
     try {
         // lets function accept either discord guild obj or id
         const guildId = typeof guild === 'string' ? guild : guild?.id;
@@ -71,8 +72,8 @@ async function nullifyGuildColumn(guild, columnName) {
         if(!allowedColumns.includes(columnName)) throw new Error(`Column "${columnName}" does not exist in guild_data`);
 
         await pool.query(
-            `UPDATE guild_data SET ${columnName} = NULL WHERE discord_server_id = $1`,
-            [guildId]
+            `UPDATE guild_data SET ${columnName} = $1 WHERE discord_server_id = $2`,
+            [value, guildId]
         )
     } catch(err) {
         console.error('Error nullifying guild column', err);
@@ -80,4 +81,4 @@ async function nullifyGuildColumn(guild, columnName) {
     }
 }
 
-module.exports = { updateGuildData, getGuildData, nullifyGuildColumn };
+module.exports = { updateGuildData, getGuildData, updateGuildColumn };

@@ -23,7 +23,7 @@ module.exports = {
             const hypixelRank = interaction.options.getString('hypixel_rank').trim().toUpperCase();
             const discordRole = interaction.options.getRole('server_role');
 
-            // check if user inputted hypixel role actually exists in guild
+            // api call
             const hypixelGuild = await getGuildById(guildData.hypixel_guild_id);
             if(!hypixelGuild.ranks.find(r => r.tag?.trim().toUpperCase() === hypixelRank))
                 return interaction.editReply({ content: `The guild rank **${hypixelRank}** does not exist in Hypixel guild **${hypixelGuild.name}**`} );

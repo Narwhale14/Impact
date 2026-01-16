@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { updateGuildData } = require('../utils/dbManager.js');
+const { updateGuildColumn, getGuildData } = require('../utils/dbManager.js');
 
 /**
  * @command - /setadminrole
@@ -13,14 +13,17 @@ module.exports = {
     adminOnly: true,
     async execute(interaction) {
         try {
+            const guildData = await getGuildData(interaction.guild.id);
+            if(guildData?.admin_role) return interaction.reply({ content: `The admin role is already set to <@&${guildData.admin_role}>.`});
+
             const adminRole = interaction.options.getRole('role');
             if(!adminRole) return interaction.reply({ content: 'Invalid role!', flag: 64 });
 
-            await updateGuildData(interaction.guild, { adminRoleId: adminRole.id});
-            await interaction.reply({ content: `Admin role set successfully to <@&${adminRole.id}>!`, allowedMentions: { roles: [] } });
+            await updateGuildColumn(interaction.guild, 'admin_role', adminRole.id);
+            await interaction.reply({ content: `Admin role set successfully to <@&${adminRole.id}>!\n**WARNING: Anyone with this role can use admin commands!**`, allowedMentions: { roles: [] } });
         } catch(err) {
             console.log('Error updating guild data: ', err);
-            await interaction.editReply("An error occured while setting admin role!");
+            await interaction.reply({ content: "An error occured while setting admin role!" });
         }
     }
 }

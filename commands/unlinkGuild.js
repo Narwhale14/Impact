@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { nullifyGuildColumn, getGuildData } = require('../utils/dbManager.js');
+const { updateGuildColumn, getGuildData } = require('../utils/dbManager.js');
 
 /**
  * @command - /unlinkguild
@@ -17,8 +17,8 @@ module.exports = {
 
             // run in parallel
             await Promise.all([
-                nullifyGuildColumn(interaction.guild.id, 'hypixel_guild_id'),
-                nullifyGuildColumn(interaction.guild.id, 'role_mappings')
+                updateGuildColumn(interaction.guild.id, 'hypixel_guild_id', null),
+                updateGuildColumn(interaction.guild.id, 'role_mappings', null)
             ]);
 
             await interaction.editReply(`Successfully unlinked any guild to this server!\nCleared linked roles!`);
