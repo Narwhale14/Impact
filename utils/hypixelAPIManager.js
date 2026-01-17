@@ -30,7 +30,7 @@ async function getGuildById(guildId) {
     }
 }
 
-async function getGuildByPlayerUUID(playerUUID) {
+async function getMemberInGuildByPlayerUUID(playerUUID) {
     try {
         const response = await fetch(`https://api.hypixel.net/guild?player=${encodeURIComponent(playerUUID)}&key=${process.env.HYPIXEL_API_KEY}`);
         const data = await response.json();
@@ -39,7 +39,10 @@ async function getGuildByPlayerUUID(playerUUID) {
         if(!data.success || !data.guild)
             throw new Error(data.cause || 'Unknown Hypixel API error');
 
-        return data.guild;
+        const memberData = data.guild.members.find(m => m.uuid === playerUUID);
+        if(!memberData) return null;
+
+        return { ...memberData, guild_id: data.guild._id, guild_name: data.guild.name };
     } catch(err) {
         console.log("Error fetching player data: ", err);
         throw err;
@@ -63,4 +66,4 @@ async function getPlayerByName(playerName) {
 }
 
 
-module.exports = { getGuildByName, getGuildById, getPlayerByName, getGuildByPlayerUUID };
+module.exports = { getGuildByName, getGuildById, getPlayerByName, getMemberInGuildByPlayerUUID };

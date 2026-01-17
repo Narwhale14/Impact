@@ -16,7 +16,7 @@ module.exports = {
         try {
             const guildDBData = await getGuildData(interaction.guild.id);
             if(!guildDBData?.hypixel_guild_id)
-                return interaction.reply({ content: "This server isn't linked to a Hypixel guild yet!\nPlease run: /linkGuild <guild name>"});
+                return interaction.reply({ content: "This server is not linked to a Hypixel guild.\nPlease run: `/linkGuild <guild name>`"});
 
             const hypixelRank = interaction.options.getString('hypixel_rank').trim().toUpperCase();
 

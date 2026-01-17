@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { getGuildData, updateLinkedPlayers, getLinkedPlayer } = require('../utils/dbManager');
-const { getPlayerByName, getGuildByPlayerUUID } = require('../utils/hypixelAPIManager.js');
+const { getPlayerByName, getMemberInGuildByPlayerUUID } = require('../utils/hypixelAPIManager.js');
 
 /**
  * @command - /link
@@ -31,9 +31,9 @@ module.exports = {
                 return interaction.editReply(`The Discord linked to the hypixel account **${minecraftName}** does not match your discord username.`);
 
             // check if player is in guild
-            const guild = await getGuildByPlayerUUID(player.uuid);
-            if (!guild) return interaction.editReply(`Minecraft player with username **${minecraftName} is not in any guild.`);
-            if(guild._id !== guildDBData.hypixel_guild_id)
+            const member = await getMemberInGuildByPlayerUUID(player.uuid);
+            if (!member) return interaction.editReply(`Minecraft player with username **${minecraftName} is not in any guild.`);
+            if(member.guild_id !== guildDBData.hypixel_guild_id)
                 return interaction.editReply(`You are not in the guild linked to the server.`);
 
             // upsert linked player
@@ -44,7 +44,7 @@ module.exports = {
                 guildDataId: guildDBData.id 
             });
 
-            interaction.editReply(`Linked **${player.displayname}** to your Discord account!`);
+            interaction.editReply(`Successfully linked **${player.displayname}** to your Discord account!`);
         } catch(err) {
             console.error("Error fetching player: ", err);
 
