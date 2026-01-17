@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { getGuildData } = require('../utils/guildDataManager.js');
 const { getLinkedPlayer } = require('../utils/linkedPlayersManager.js');
-const { getProfileSkyblockLevelByUUID } = require('../utils/hypixelAPIManager.js');
+const { getProfileSkyblockLevelByUUID, getMemberInGuildByPlayerUUID } = require('../utils/hypixelAPIManager.js');
 const { getEligibleRoleId, removeMappedRoles } = require('../utils/roleHelpers.js');
 
 /**
@@ -16,25 +16,43 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         try {
+            const profileName = interaction.options.getString('profile');
+
             const guildDBData = await getGuildData(interaction.guild.id);
             if(!guildDBData) return interaction.editReply({ content: "This server is not linked to a Hypixel guild."});
 
-            // server guild membership
             const linkedPlayer = await getLinkedPlayer(interaction.user.id);
             if(!linkedPlayer || linkedPlayer.guild_data_id !== guildDBData.id)
                 return interaction.editReply({ content: "You are not linked to the guild for this server.\nIf you believe you are in the guild, run `/link <minecraft username>`"});
-
-            const profileName = interaction.options.getString('profile');
+            
+            // player data
             const { level, profile } = await getProfileSkyblockLevelByUUID(linkedPlayer.hypixel_uuid, profileName);
+            const member = await getMemberInGuildByPlayerUUID(linkedPlayer.hypixel_uuid);
+            if(!member || member.guild_id !== guildDBData.hypixel_guild_id)
+                return interaction.editReply({ content: "You are not currently in this guild. "});
+            const inGameRank = member.rank.toUpperCase();
 
-            const roleId = getEligibleRoleId(guildDBData.role_mappings, level);
-            if(!roleId) return interaction.editReply(`No Discord role available for profile **${profile}** (level: ${level})`);
+            /** available data from API:
+             *      player profile level
+             *      player profile name
+             *      player uuid
+             *      player guild rank
+             *      guild id
+             *      guild name
+             */
+
+            const eligibleRole = getEligibleRoleId(guildDBData.role_mappings, level);
+            if(!eligibleRole) return interaction.editReply(`No Discord role available for profile **${profile}** (level: ${level})`);
 
             const memberDiscord = await interaction.guild.members.fetch(interaction.user.id);
             await removeMappedRoles(memberDiscord, guildDBData.role_mappings);
-            await memberDiscord.roles.add(roleId);
+            await memberDiscord.roles.add(eligibleRole.discord_role_id);
+            
+            let success = `Successfully updated role to <@&${eligibleRole.discord_role_id}> based on Skyblock profile **${profile}** (level: ${level})!`;
+            if(inGameRank !== eligibleRole.rank)
+                success += `\nCurrent in-game guild rank is **${inGameRank}**, expect to be changed to **${eligibleRole.rank}** soon!`;
 
-            return interaction.editReply({ content: `Successfully updated role to <@&${roleId}> based on profile **${profile}**!`, allowedMentions: { roles: [] }});
+            return interaction.editReply({ content: success, allowedMentions: { roles: [] } });
         } catch(err) {
             console.error("Error updating role: ", err);
             return interaction.editReply({ content: 'An error occured while updating your role.' });

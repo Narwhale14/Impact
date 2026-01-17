@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { updateGuildData, getGuildData } = require('../utils/guildDataManager.js');
 const { getGuildById } = require('../utils/hypixelAPIManager.js');
 
@@ -12,8 +12,9 @@ module.exports = {
         .setDescription('Links in-game guild rank with discord role')
         .addStringOption(option => option.setName('hypixel_rank').setDescription('Guild rank').setRequired(true))
         .addRoleOption(option => option.setName('server_role').setDescription('Server role').setRequired(true))
-        .addIntegerOption(option => option.setName('requirement').setDescription('Skyblock level requirement').setMinValue(0).setRequired(false)),
-    adminOnly: true,
+        .addIntegerOption(option => option.setName('requirement').setDescription('Skyblock level requirement').setMinValue(0).setRequired(false))
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        adminOnly: true,
     async execute(interaction) {
         await interaction.deferReply();
         try {

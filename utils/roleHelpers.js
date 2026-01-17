@@ -1,9 +1,12 @@
 function getEligibleRoleId(roleMappings, level) {
-    const eligibleRoles = Object.values(roleMappings || {})
-        .filter(r => r.discord_role_id && r.level_requirement != null && level >= r.level_requirement) // only roles user meets reqs for
-        .sort((a, b) => b.level_requirement - a.level_requirement); // sorts roles in order of greatest req
+    const eligibleRoles = Object.entries(roleMappings || {})
+        .filter(([_, data]) => data.discord_role_id && data.level_requirement != null && level >= data.level_requirement) // only roles user meets reqs for
+        .sort((a, b) => b[1].level_requirement - a[1].level_requirement); // sorts roles in order of greatest req
 
-    return eligibleRoles[0]?.discord_role_id ?? null;
+    return {
+        rank: eligibleRoles[0][0],
+        discord_role_id: eligibleRoles[0][1].discord_role_id
+    };
 }
 
 async function removeMappedRoles(memberDiscord, roleMappings) {

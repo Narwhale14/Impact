@@ -29,7 +29,13 @@ module.exports = {
             if(!playerDiscord) 
                 return interaction.editReply(`Minecraft player with username **${minecraftName}** does not have a Discord linked.\nHow to set:\n1) Go to hypixel lobby\n2) Click your player head in hotbar\n3) Go to Social Media -> Discord\n4) Click and type Discord username in chat!`);
             if(playerDiscord !== interaction.user.username.toLowerCase())
-                return interaction.editReply(`The Discord linked to the hypixel account **${minecraftName}** does not match your discord username.`);
+                return interaction.editReply(
+                    `The Discord linked to the hypixel account **${minecraftName}** does not match your discord username.\n` +
+                    `Currently linked Discord on hypixel: **${playerDiscord}**\n` +
+                    `Your Discord: **${interaction.user.username}**\n\n` +
+                    `If this is your account, you may need to reconnect your discord this way:\n` +
+                    `1) Go to hypixel lobby\n2) Click your player head in hotbar\n3) Go to Social Media -> Discord\n4) Click and type Discord username in chat!`
+                );
 
             // check if player is in guild
             const member = await getMemberInGuildByPlayerUUID(player.uuid);
@@ -50,7 +56,7 @@ module.exports = {
             console.error("Error fetching player: ", err);
 
             if(typeof err.message === 'string' && err.message.toLowerCase().includes('already looked up this name'))
-                return interaction.editReply("That minecraft username was looked up very recently!\nPlease wait **5 minutes** before trying to link again.");
+                return interaction.editReply("That minecraft username was looked up very recently!\nPlease wait **1 minute** before trying to link again.");
 
             await interaction.editReply("An error occured while linking your account.\nPlease try again later.");
         }

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { updateGuildData, getGuildData } = require('../utils/guildDataManager.js');
 
 /**
@@ -9,8 +9,9 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('unlinkrole')
         .setDescription('Unlinks in-game guild rank with discord role')
-        .addStringOption(option => option.setName('hypixel_rank').setDescription('Guild rank').setRequired(true)),
-    adminOnly: true,
+        .addStringOption(option => option.setName('hypixel_rank').setDescription('Guild rank').setRequired(true))
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        adminOnly: true,
     async execute(interaction) {
         try {
             const guildDBData = await getGuildData(interaction.guild.id);

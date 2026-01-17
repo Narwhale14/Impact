@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 
 /**
  * @command - /deleteverifymessage
@@ -9,8 +9,9 @@ module.exports = {
         .setName('deleteverifymessage')
         .setDescription('Deletes the verification message')
         .addChannelOption(option => option.setName('channel').setDescription('Channel of the verification message').setRequired(true))
-        .addStringOption(option => option.setName('id').setDescription('ID of the verification message').setRequired(true)),
-    adminOnly: true,
+        .addStringOption(option => option.setName('id').setDescription('ID of the verification message').setRequired(true))
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        adminOnly: true,
     async execute(interaction) {
         const channel = interaction.options.getChannel('channel');
         const verificationMessageId = await interaction.options.getString('id')

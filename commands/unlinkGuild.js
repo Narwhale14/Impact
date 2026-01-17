@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits } = require('discord.js');
 const { updateGuildColumn, getGuildData } = require('../utils/guildDataManager.js');
 
 /**
@@ -8,8 +8,9 @@ const { updateGuildColumn, getGuildData } = require('../utils/guildDataManager.j
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('unlinkguild')
-        .setDescription('Unlinks discord server with hypixel guild'),
-    adminOnly: true,
+        .setDescription('Unlinks discord server with hypixel guild')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        adminOnly: true,
     async execute(interaction) {
         await interaction.deferReply();
         try {

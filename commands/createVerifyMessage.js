@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits } = require('discord.js');
 
 /**
  * @command - /createverifymessage
@@ -10,8 +10,9 @@ module.exports = {
         .setName('createverifymessage')
         .setDescription('Creates the verification message')
         .addStringOption(option => option.setName('message').setDescription('Sends the new verification message').setRequired(true))
-        .addChannelOption(option => option.setName('channel').setDescription('The channel it goes in').setRequired(true)),
-    adminOnly: true,
+        .addChannelOption(option => option.setName('channel').setDescription('The channel it goes in').setRequired(true))
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        adminOnly: true,
     async execute(interaction) {
         const content = interaction.options.getString('message');
         const welcomeChannel = interaction.options.getChannel('channel');

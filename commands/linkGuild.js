@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { getGuildData, updateGuildColumn } = require('../utils/guildDataManager.js');
 const { getGuildByName } = require('../utils/hypixelAPIManager.js');
 
@@ -10,8 +10,9 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('linkguild')
         .setDescription('Links discord server with hypixel guild')
-        .addStringOption(option => option.setName('guild').setDescription('Guild of choice').setRequired(true)),
-    adminOnly: true,
+        .addStringOption(option => option.setName('guild').setDescription('Guild of choice').setRequired(true))
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        adminOnly: true,
     async execute(interaction) {
         await interaction.deferReply();
         try {

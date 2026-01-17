@@ -6,7 +6,7 @@ module.exports = {
         const guildData = await getGuildData(interaction.guild.id);
         const roleId = guildData?.verification_role;
         // in case of database error
-        if (!roleId) return interaction.reply({ content: `Unable to locate verification role.\nPinging for help: <@330792317701193728>` });
+        if (!roleId) return interaction.reply({ content: `Unable to locate verification role.\nPlease ping a staff for help.` });
 
         try {
             await interaction.member.roles.add(roleId);

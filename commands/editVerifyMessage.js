@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 
 /**
  * @command - /editverifymessage
@@ -10,8 +10,9 @@ module.exports = {
         .setDescription('Changes the verification message')
         .addStringOption(option => option.setName('message').setDescription('The new verification message').setRequired(true))
         .addChannelOption(option => option.setName('channel').setDescription('Channel of the verification message').setRequired(true))
-        .addStringOption(option => option.setName('id').setDescription('ID of the verification message').setRequired(true)),
-    adminOnly: true,
+        .addStringOption(option => option.setName('id').setDescription('ID of the verification message').setRequired(true))
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        adminOnly: true,
     async execute(interaction) {
         const newMessage = interaction.options.getString('message');
         const channel = interaction.options.getChannel('channel');

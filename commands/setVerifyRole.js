@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { updateGuildColumn, getGuildData } = require('../utils/guildDataManager.js');
 
 /**
@@ -9,8 +9,9 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('setverifyrole')
         .setDescription('Sets role to use for verification')
-        .addRoleOption(option => option.setName('role').setDescription('Role of choice').setRequired(true)),
-    adminOnly: true,
+        .addRoleOption(option => option.setName('role').setDescription('Role of choice').setRequired(true))
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        adminOnly: true,
     async execute(interaction) {
         try {
             const guildDBData = await getGuildData(interaction.guild.id);
