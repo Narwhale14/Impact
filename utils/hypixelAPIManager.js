@@ -65,5 +65,31 @@ async function getPlayerByName(playerName) {
     }
 }
 
+async function getProfileSkyblockLevelByUUID(playerUUID, profileName) {
+    try {
+        const response = await fetch(`https://api.hypixel.net/v2/skyblock/profiles?uuid=${playerUUID}&key=${process.env.HYPIXEL_API_KEY}`);
+        const data = await response.json();
 
-module.exports = { getGuildByName, getGuildById, getPlayerByName, getMemberInGuildByPlayerUUID };
+        // verify connection to api
+        if(!data.success || !Array.isArray(data.profiles))
+            throw new Error(data.cause || 'Unknown Hypixel API error');
+
+        const targetProfile = profileName?.toLowerCase();
+        const filteredProfiles = data.profiles.filter(p => p.cute_name?.toLowerCase() === targetProfile);
+        if(filteredProfiles.length === 0)
+            throw new Error(targetProfile ? `Profile ${profileName}" not found` : `No Skyblock profiles found`);
+
+        const member = filteredProfiles[0].members[playerUUID];
+        if(!member) throw new Error(`Player not found in profile ${filteredProfiles[0].cute_name}`);
+
+        return {
+            level: (member.leveling?.experience / 100) ?? 0,
+            profile: filteredProfiles[0].cute_name
+        };
+    } catch(err) {
+        console.log("Error fetching player data: ", err);
+        throw err;
+    }
+}
+
+module.exports = { getGuildByName, getGuildById, getPlayerByName, getMemberInGuildByPlayerUUID, getProfileSkyblockLevelByUUID };
