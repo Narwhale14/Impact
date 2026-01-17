@@ -13,8 +13,8 @@ module.exports = {
     adminOnly: true,
     async execute(interaction) {
         try {
-            const guildData = await getGuildData(interaction.guild.id);
-            if(guildData?.verification_role) return interaction.reply({ content: `The verification role is already set to <@&${guildData.verification_role}>.`});
+            const guildDBData = await getGuildData(interaction.guild.id);
+            if(guildDBData?.verification_role) return interaction.reply({ content: `The verification role is already set to <@&${guildDBData.verification_role}>.`});
 
             const verificationRole = interaction.options.getRole('role');
             if(!verificationRole) return interaction.reply({ content: 'Invalid role!' });

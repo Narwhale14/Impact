@@ -11,12 +11,11 @@ STEP 1: database design
 
 CREATE TABLE linked_players (
     id SERIAL PRIMARY KEY,                 -- internal unique ID
-    discord_id BIGINT NOT NULL,            -- Discord user ID
+    discord_id BIGINT NOT NULL UNIQUE,     -- Discord user ID (only one row per user)
     hypixel_uuid TEXT NOT NULL,            -- Minecraft UUID
     hypixel_name TEXT NOT NULL,            -- Minecraft username
     guild_data_id INT NOT NULL REFERENCES guild_data(id), -- server-guild link
-    linked_at TIMESTAMP DEFAULT NOW(),     -- optional: when the user linked
-    UNIQUE(discord_id, guild_data_id)      -- prevent duplicate links per server
+    linked_at TIMESTAMP DEFAULT NOW()      -- when the user linked
 );
 
 STEP 2: linking discord user to hypixel account

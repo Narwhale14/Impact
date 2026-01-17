@@ -12,8 +12,8 @@ module.exports = {
     adminOnly: true,
     async execute(interaction) {
         try {
-            const guildData = await getGuildData(interaction.guild.id);
-            if(!guildData?.admin_role) return await interaction.reply({ content: "No admin role is currently set!" });
+            const guildDBData = await getGuildData(interaction.guild.id);
+            if(!guildDBData?.admin_role) return await interaction.reply({ content: "No admin role is currently set!" });
 
             await updateGuildColumn(interaction.guild, 'admin_role', null);
             await interaction.reply({ content: `Admin role set successfully cleared.` });

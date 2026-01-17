@@ -5,7 +5,7 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
     max: 10, // optional: maximum number of connections
-    idleTimeoutMillis: 30000, // 30s, optional: how long a client can sit idle
+    idleTimeoutMillis: 10000, // 30s, optional: how long a client can sit idle
     connectionTimeoutMillis: 2000, // 2s, optional: wait for connection before failing
 });
 

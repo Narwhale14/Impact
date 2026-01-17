@@ -14,13 +14,13 @@ module.exports = {
     adminOnly: true,
     async execute(interaction) {
         try {
-            const guildData = await getGuildData(interaction.guild.id);
-            if(!guildData?.hypixel_guild_id)
+            const guildDBData = await getGuildData(interaction.guild.id);
+            if(!guildDBData?.hypixel_guild_id)
                 return interaction.reply({ content: "This server isn't linked to a Hypixel guild yet!\nPlease run: /linkGuild <guild name>"});
 
             const hypixelRank = interaction.options.getString('hypixel_rank').trim().toUpperCase();
 
-            const roleMappings = guildData?.role_mappings || {};
+            const roleMappings = guildDBData?.role_mappings || {};
             if(!roleMappings[hypixelRank])
                 return interaction.reply({ content: `The guild rank **${hypixelRank}** is not current linked to any discord role!` });
             delete roleMappings[hypixelRank];

@@ -9,11 +9,12 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('unlinkguild')
         .setDescription('Unlinks discord server with hypixel guild'),
+    adminOnly: true,
     async execute(interaction) {
         await interaction.deferReply();
         try {
-            const existingGuildData = await getGuildData(interaction.guild.id);
-            if(!existingGuildData?.hypixel_guild_id) return interaction.editReply('This servier isn\'t linked to a guild yet!');
+            const guildDBData = await getGuildData(interaction.guild.id);
+            if(!guildDBData?.hypixel_guild_id) return interaction.editReply('This servier isn\'t linked to a guild yet!');
 
             // run in parallel
             await Promise.all([

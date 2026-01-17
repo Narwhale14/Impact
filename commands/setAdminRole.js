@@ -13,8 +13,8 @@ module.exports = {
     adminOnly: true,
     async execute(interaction) {
         try {
-            const guildData = await getGuildData(interaction.guild.id);
-            if(guildData?.admin_role) return interaction.reply({ content: `The admin role is already set to <@&${guildData.admin_role}>.`});
+            const guildDBData = await getGuildData(interaction.guild.id);
+            if(guildDBData?.admin_role) return interaction.reply({ content: `The admin role is already set to <@&${guildDBData.admin_role}>.`});
 
             const adminRole = interaction.options.getRole('role');
             if(!adminRole) return interaction.reply({ content: 'Invalid role!', flag: 64 });

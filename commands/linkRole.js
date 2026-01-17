@@ -16,19 +16,19 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         try {
-            const guildData = await getGuildData(interaction.guild.id);
-            if(!guildData?.hypixel_guild_id)
+            const guildDBData = await getGuildData(interaction.guild.id);
+            if(!guildDBData?.hypixel_guild_id)
                 return interaction.editReply({ content: "This server isn't linked to a Hypixel guild yet!\nPlease run: /linkGuild <guild name>"});
 
             const hypixelRank = interaction.options.getString('hypixel_rank').trim().toUpperCase();
             const discordRole = interaction.options.getRole('server_role');
 
             // api call
-            const hypixelGuild = await getGuildById(guildData.hypixel_guild_id);
+            const hypixelGuild = await getGuildById(guildDBData.hypixel_guild_id);
             if(!hypixelGuild.ranks.find(r => r.tag?.trim().toUpperCase() === hypixelRank))
                 return interaction.editReply({ content: `The guild rank **${hypixelRank}** does not exist in Hypixel guild **${hypixelGuild.name}**`} );
 
-            const roleMappings = guildData?.role_mappings || {};
+            const roleMappings = guildDBData?.role_mappings || {};
 
             if(roleMappings[hypixelRank])
                 return interaction.editReply({ content: `The guild rank** ${hypixelRank}** is already linked to <@&${roleMappings[hypixelRank].discord_role_id}>!`, allowedMentions: { roles: [] } });

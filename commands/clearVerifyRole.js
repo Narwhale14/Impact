@@ -12,8 +12,8 @@ module.exports = {
     adminOnly: true,
     async execute(interaction) {
         try {
-            const guildData = await getGuildData(interaction.guild.id);
-            if(!guildData?.verification_role) return await interaction.reply({ content: "No verification role is currently set!" });
+            const guildDBData = await getGuildData(interaction.guild.id);
+            if(!guildDBData?.verification_role) return await interaction.reply({ content: "No verification role is currently set!" });
 
             await updateGuildColumn(interaction.guild, 'verification_role', null);
             await interaction.reply({ content: `Verification role set successfully cleared.` });

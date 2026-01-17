@@ -11,11 +11,12 @@ module.exports = {
         .setName('linkguild')
         .setDescription('Links discord server with hypixel guild')
         .addStringOption(option => option.setName('guild').setDescription('Guild of choice').setRequired(true)),
+    adminOnly: true,
     async execute(interaction) {
         await interaction.deferReply();
         try {
-            const existingGuildData = await getGuildData(interaction.guild.id);
-            if(existingGuildData?.hypixel_guild_id) return interaction.editReply('This servier is already linked to a Hypixel guild!');
+            const guildDBData = await getGuildData(interaction.guild.id);
+            if(guildDBData?.hypixel_guild_id) return interaction.editReply('This servier is already linked to a Hypixel guild!');
 
             // api call
             const guildName = interaction.options.getString('guild');
