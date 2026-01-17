@@ -2,7 +2,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
-const { getGuildData } = require('./utils/dbManager.js');
+const { getGuildData } = require('./utils/guildDataManager.js');
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]

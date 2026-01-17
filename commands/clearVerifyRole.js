@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { updateGuildColumn, getGuildData } = require('../utils/dbManager.js');
+const { updateGuildColumn, getGuildData } = require('../utils/guildDataManager.js');
 
 /**
  * @command - /clearverifyrole

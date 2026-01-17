@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { getGuildData, updateLinkedPlayers, getLinkedPlayer } = require('../utils/dbManager');
-const { getPlayerByName, getMemberInGuildByPlayerUUID } = require('../utils/hypixelAPIManager.js');
+const { getGuildData } = require('../utils/guildDataManager.js');
+const { getLinkedPlayer } = require('../utils/linkedPlayersManager.js');
+const { getMemberInGuildByPlayerUUID } = require('../utils/hypixelAPIManager.js');
 
 /**
  * @command - /updaterole

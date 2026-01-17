@@ -1,4 +1,4 @@
-const { getGuildData } = require('../../utils/dbManager.js');
+const { getGuildData } = require('../../utils/guildDataManager.js');
 
 module.exports = {
     customId: 'verify_button',

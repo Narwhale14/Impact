@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { updateGuildData, getGuildData } = require('../utils/dbManager');
+const { updateGuildData, getGuildData } = require('../utils/guildDataManager.js');
 const { getGuildById } = require('../utils/hypixelAPIManager.js');
 
 /**

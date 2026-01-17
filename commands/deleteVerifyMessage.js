@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, InteractionResponseFlags } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js');
 
 /**
  * @command - /deleteverifymessage

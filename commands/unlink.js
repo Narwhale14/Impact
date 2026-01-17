@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { deleteLinkedPlayer, getLinkedPlayer, getGuildData } = require('../utils/dbManager');
+const { getGuildData } = require('../utils/guildDataManager.js');
+const { deleteLinkedPlayer, getLinkedPlayer } = require('../utils/linkedPlayersManager.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
