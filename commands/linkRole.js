@@ -11,7 +11,8 @@ module.exports = {
         .setName('linkrole')
         .setDescription('Links in-game guild rank with discord role')
         .addStringOption(option => option.setName('hypixel_rank').setDescription('Guild rank').setRequired(true))
-        .addRoleOption(option => option.setName('server_role').setDescription('Server role').setRequired(true)),
+        .addRoleOption(option => option.setName('server_role').setDescription('Server role').setRequired(true))
+        .addIntegerOption(option => option.setName('requirement').setDescription('Skyblock level requirement').setMinValue(0).setRequired(false)),
     adminOnly: true,
     async execute(interaction) {
         await interaction.deferReply();
@@ -29,13 +30,20 @@ module.exports = {
                 return interaction.editReply({ content: `The guild rank **${hypixelRank}** does not exist in Hypixel guild **${hypixelGuild.name}**`} );
 
             const roleMappings = guildDBData?.role_mappings || {};
-
             if(roleMappings[hypixelRank])
                 return interaction.editReply({ content: `The guild rank** ${hypixelRank}** is already linked to <@&${roleMappings[hypixelRank].discord_role_id}>!`, allowedMentions: { roles: [] } });
-            roleMappings[hypixelRank] = { discord_role_id: discordRole.id }
+
+            // set data
+            const requirement = interaction.options.getInteger('requirement');
+            roleMappings[hypixelRank] = { 
+                discord_role_id: discordRole.id,
+                ...(requirement !== null && { level_requirement: requirement })
+            }
+
             await updateGuildData(interaction.guild, { roleMappings });
 
-            await interaction.editReply({ content: `Linked **${hypixelRank}** to <@&${discordRole.id}> successfully!`, allowedMentions: { roles: [] } });
+            const requirementText = requirement !== null ? ` (Level Requirement: **${requirement}**)` : '';
+            await interaction.editReply({ content: `Linked **${hypixelRank}** to <@&${discordRole.id}> successfully!${requirementText}`, allowedMentions: { roles: [] } });
         } catch(err) {
             console.error("Failed to pull/update guild data: ", err);
             await interaction.editReply({ content: "An error occurred while linking roles." });
