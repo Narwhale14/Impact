@@ -2,21 +2,29 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { Client, GatewayIntentBits, Collection, PermissionFlagsBits } = require('discord.js');
-const { getGuildData } = require('./utils/guildDataManager.js');
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
 });
 
-// commands collection init
+// commands collection
 client.commands = new Collection();
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+const loadCommands = (dir, category = null) => {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for(const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
 
-for(const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-    client.commands.set(command.data.name, command);
+        if(entry.isDirectory()) {
+            if(entry.name.toLowerCase() === 'unused') continue;
+            loadCommands(fullPath, entry.name);
+        } else if(entry.name.endsWith('.js')) {
+            const command = require(fullPath);
+            client.commands.set(command.data.name, command);
+        }
+    }
 }
+
+loadCommands(path.join(__dirname, 'commands'));
 
 // buttons collection init
 client.buttons = new Collection();
@@ -40,13 +48,26 @@ client.on('interactionCreate', async interaction => {
         if(command.adminOnly && !interaction.member.permissions.has(PermissionFlagsBits.Administrator))
             return interaction.reply({ content: 'This command is restrcited to staff only.', flag: 64 });
 
-        await command.execute(interaction);
+        try { 
+            await command.execute(interaction);
+        } catch(err) {
+            console.error(err);
+            interaction.reply({ content: 'There was an error executing that command', flag: 64 });
+        }
+
         return;
     }
 
     if(interaction.isButton()) {
         const button = client.buttons.get(interaction.customId);
-        if(button) await button.execute(interaction);
+        if(!button) return;
+
+        try {
+            await button.execute(interaction);
+        } catch(err) {
+            console.error(err);
+            interaction.reply({ content: 'There was an error handling that button', flag: 64 });
+        }
         return;
     }
 });

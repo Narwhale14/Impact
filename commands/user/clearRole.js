@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { getGuildData } = require('../utils/guildDataManager.js');
+const { getGuildData } = require('../../utils/guildDataManager.js');
 
 /**
  * @command - /clearrole
@@ -8,7 +8,7 @@ const { getGuildData } = require('../utils/guildDataManager.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('clearrole')
-        .setDescription('Clears discord role based on guild rank'),
+        .setDescription('Clears guild rank role'),
     async execute(interaction) {
         await interaction.deferReply();
         try {

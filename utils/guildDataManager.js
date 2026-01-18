@@ -5,23 +5,21 @@ const { pool } = require('../database.js');
  * @param {*} guild guild object (interaction.guild)
  * @param {*} param1 table contents
  */
-async function updateGuildData(guild, { verificationRoleId, adminRoleId, roleMappings, hypixelGuildId }) {
+async function updateGuildData(guild, { verificationRoleId, roleMappings, hypixelGuildId }) {
     try {
         await pool.query(
-            `INSERT INTO guild_data (discord_server_id, discord_server_name, verification_role, admin_role, role_mappings, hypixel_guild_id)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            `INSERT INTO guild_data (discord_server_id, discord_server_name, verification_role, role_mappings, hypixel_guild_id)
+            VALUES ($1, $2, $3, $4, $5)
             ON CONFLICT (discord_server_id)
             DO UPDATE SET
                 discord_server_name = COALESCE($2, guild_data.discord_server_name),
                 verification_role = COALESCE($3, guild_data.verification_role),
-                admin_role = COALESCE($4, guild_data.admin_role),
                 role_mappings = COALESCE($5, guild_data.role_mappings),
                 hypixel_guild_id = COALESCE($6, guild_data.hypixel_guild_id)`,
             [
                 guild.id, 
                 guild.name,
                 verificationRoleId || null, 
-                adminRoleId || null, 
                 roleMappings ? JSON.stringify(roleMappings) : null,
                 hypixelGuildId || null
             ]

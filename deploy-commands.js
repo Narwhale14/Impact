@@ -1,16 +1,28 @@
 require('dotenv').config();
 const fs = require('fs');
+const path = require('path');
 const { REST, Routes } = require('discord.js');
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
 const commands = [];
+const loadCommands = (dir) => {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
 
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+    for(const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
 
-for (const file of commandFiles) {
-    const command = require(`./commands/${file}`)
-    commands.push(command.data.toJSON());
-}
+        if(entry.isDirectory()) {
+            if(entry.name.toLowerCase() === 'unused') continue;
+
+            loadCommands(fullPath);
+        } else if(entry.name.endsWith('.js')) {
+            const command = require(fullPath);
+            if(command.data) commands.push(command.data.toJSON());
+        }
+    }
+};
+
+loadCommands(path.join(__dirname, 'commands'));
 
 // register slash cmds
 (async () => {

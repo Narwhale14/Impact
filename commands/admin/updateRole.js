@@ -1,8 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { getGuildData } = require('../utils/guildDataManager.js');
-const { getLinkedPlayer } = require('../utils/linkedPlayersManager.js');
-const { getProfileSkyblockLevelByUUID, getMemberInGuildByPlayerUUID } = require('../utils/hypixelAPIManager.js');
-const { getEligibleRoleId, removeMappedRoles } = require('../utils/roleHelpers.js');
+const { getGuildData } = require('../../utils/guildDataManager.js');
+const { getLinkedPlayer } = require('../../utils/linkedPlayersManager.js');
+const { getProfileSkyblockLevelByUUID, getMemberInGuildByPlayerUUID } = require('../../utils/hypixelAPIManager.js');
+const { getEligibleRoleId, removeMappedRoles } = require('../../utils/roleHelpers.js');
 
 /**
  * @command - /updaterole
@@ -16,8 +16,6 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         try {
-            const profileName = interaction.options.getString('profile');
-
             const guildDBData = await getGuildData(interaction.guild.id);
             if(!guildDBData) return interaction.editReply({ content: "This server is not linked to a Hypixel guild."});
 
@@ -26,6 +24,7 @@ module.exports = {
                 return interaction.editReply({ content: "You are not linked to the guild for this server.\nIf you believe you are in the guild, run `/link <minecraft username>`"});
             
             // player data
+            const profileName = interaction.options.getString('profile');
             const { level, profile } = await getProfileSkyblockLevelByUUID(linkedPlayer.hypixel_uuid, profileName);
             const member = await getMemberInGuildByPlayerUUID(linkedPlayer.hypixel_uuid);
             if(!member || member.guild_id !== guildDBData.hypixel_guild_id)

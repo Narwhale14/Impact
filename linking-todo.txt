@@ -1,0 +1,53 @@
+LINKING!
+
+OBJECTIVES:
+- check if player is in guild
+- if yes, assign proper discord role based on the in-game rank
+- store user-guild data in a way that is easy to query for future updates
+
+STEP 1: database design
+- update guild_data to contain ID as primary key
+- create table linked_players
+
+CREATE TABLE linked_players (
+    id SERIAL PRIMARY KEY,                 -- internal unique ID
+    discord_id BIGINT NOT NULL UNIQUE,     -- Discord user ID (only one row per user)
+    hypixel_uuid TEXT NOT NULL,            -- Minecraft UUID
+    hypixel_name TEXT NOT NULL,            -- Minecraft username
+    guild_data_id INT NOT NULL REFERENCES guild_data(id), -- server-guild link
+    linked_at TIMESTAMP DEFAULT NOW()      -- when the user linked
+);
+
+STEP 2: linking discord user to hypixel account
+    /link command
+    - input: minecraft username
+    - IF user is already linked from old guild, all that needs to change is linked_at, and guild_data_id
+    - fetch hypixel UUID via api
+    - validate if user is in guild linked to the discord
+    - update/insert row in linked_players
+
+    discord_id -> user's discord id
+    hypixel_uuid -> UUID via api
+    hypixel_name -> minecraft username also via api
+        (if using the parameter given by the user, should instead STORE the username given from the player API)
+    guild_data_id -> the ID of the guild_data entry
+        (linking is only allowed in a server that's linked to a guild, so NO adding new entries to guild_data)
+
+    /unlink command (option input: discord username/id)
+    - with discord user id, find linked_players entry for them and delete it.
+    - admin can unlink people manually
+
+STEP 3: assigning roles based on guild rank
+    /updaterole command
+    - look up user in linked_players using discord_id and discord_server_id (interaction.user.id and interaction.guild.id)
+        - this lets you get guildData.id, and now you can verify the user is in the guild via guildData.id === guild_data_id from player query
+    - fetch current guild rank via hypixel API (how? dk yet)
+    - check guild_data.role_mappings JSON for discord role corresponding to rank
+    - add correct discord role, remove outdated roles
+
+    /clearrole command
+    - can let users remove their rank themselves.
+        (i dont think its stored in db, so all it needs to do is update their roles)
+
+    /updaterole all command
+    - updates for all players in linked_players that have guild_data_id equal to the server's linked guild

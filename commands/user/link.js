@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { getGuildData } = require('../utils/guildDataManager.js');
-const { updateLinkedPlayers } = require(`../utils/linkedPlayersManager.js`);
-const { getPlayerByName, getMemberInGuildByPlayerUUID } = require('../utils/hypixelAPIManager.js');
+const { getGuildData } = require('../../utils/guildDataManager.js');
+const { updateLinkedPlayers } = require(`../../utils/linkedPlayersManager.js`);
+const { getPlayerByName, getMemberInGuildByPlayerUUID } = require('../../utils/hypixelAPIManager.js');
 
 /**
  * @command - /link
@@ -30,7 +30,7 @@ module.exports = {
                 return interaction.editReply(`Minecraft player with username **${minecraftName}** does not have a Discord linked.\nHow to set:\n1) Go to hypixel lobby\n2) Click your player head in hotbar\n3) Go to Social Media -> Discord\n4) Click and type Discord username in chat!`);
             if(playerDiscord !== interaction.user.username.toLowerCase())
                 return interaction.editReply(
-                    `The Discord linked to the hypixel account **${minecraftName}** does not match your discord username.\n` +
+                    `The Discord linked to the Hypixel account **${minecraftName}** does not match your discord username.\n` +
                     `Currently linked Discord on hypixel: **${playerDiscord}**\n` +
                     `Your Discord: **${interaction.user.username}**\n\n` +
                     `If this is your account, you may need to reconnect your discord this way:\n` +

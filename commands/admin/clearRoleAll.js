@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
-const { getGuildData } = require('../utils/guildDataManager.js');
+const { getGuildData } = require('../../utils/guildDataManager.js');
 
 /**
  * @command - /clearroleall
@@ -11,6 +11,7 @@ module.exports = {
         .setDescription('Clears discord role based on guild rank from ALL users')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
         adminOnly: true,
+        dangerous: true,
     async execute(interaction) {
         await interaction.deferReply();
         try {

@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
-const { updateGuildData, getGuildData } = require('../utils/guildDataManager.js');
+const { updateGuildData, getGuildData } = require('../../utils/guildDataManager.js');
 
 /**
  * @command - /unlinkrole

@@ -1,10 +1,10 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { deleteLinkedPlayer, getLinkedPlayer } = require('../utils/linkedPlayersManager.js');
+const { deleteLinkedPlayer, getLinkedPlayer } = require('../../utils/linkedPlayersManager.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('unlink')
-        .setDescription('Unlinks your Discord from your Minecraft Hypixel accounts'),
+        .setDescription('Unlinks your Hypixel account to your Discord'),
     async execute(interaction) {
         await interaction.deferReply();
         try {
