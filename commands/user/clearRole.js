@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { getGuildData } = require('../../utils/guildDataManager.js');
+const embeds = require('../../interactions/embeds/embeds.js');
 
 /**
  * @command - /clearrole
@@ -13,7 +14,7 @@ module.exports = {
         await interaction.deferReply();
         try {
             const guildDBData = await getGuildData(interaction.guild.id);
-            if(!guildDBData) return interaction.editReply({ content: "This server is not linked to a Hypixel guild."});
+            if(!guildDBData?.hypixel_guild_id) return interaction.editReply({ embeds: [embeds.guildNotLinked()] });
 
             const roleMappings = guildDBData.role_mappings || {};
             const memberDiscord = interaction.guild.members.cache.get(interaction.user.id);
@@ -26,13 +27,16 @@ module.exports = {
                 }
             }
 
+            let success = '';
             if(cleared) 
-                return interaction.editReply({ content: `Successfully cleared all rank roles.\nTo sync in-game rank again, run \`/updaterole\`` });
+                success = `Successfully cleared all rank roles.\nTo sync in-game rank again, run \`/updaterole\``;
             else 
-                return interaction.editReply({ content: 'No rank to clear!'})
+                success = 'No rank to clear!';
+
+            return interaction.editReply({ embeds: [embeds.successEmbed(success, interaction.guild.members.me.displayHexColor)] });
         } catch(err) {
             console.error("Error assinging guild role: ", err);
-            return interaction.editReply({ content: 'An error occured while syncing your role.' });
+            return interaction.editReply({ embeds: [embeds.catchErrorEmbed('An error occured while syncing your role.')] });
         }
     }
 }

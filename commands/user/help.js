@@ -16,7 +16,7 @@ module.exports = {
         const helpEmbed = new EmbedBuilder()
             .setTitle('List of Commands')
             .setDescription(`Here's a list of all commands`)
-            .setColor(interaction.member.displayHexColor)
+            .setColor(interaction.guild.members.me.displayHexColor)
             .setFooter({ text: 'For admin commands, send /helpadmin' });
 
         commands.forEach(cmd => {

@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const embeds = require('../../interactions/embeds/embeds.js');
 
 /**
  * @command - /editverifymessage
@@ -17,15 +18,15 @@ module.exports = {
         const newMessage = interaction.options.getString('message');
         const channel = interaction.options.getChannel('channel');
         const verificationMessageId = await interaction.options.getString('id')
-        if (!verificationMessageId) return interaction.reply({ content: 'Verification message does not exist!', flags: 64 });
+        if (!verificationMessageId) return interaction.reply({ embeds: [embeds.errorEmbed('Verification message does not exist!')] });
 
         try {
             const message = await channel.messages.fetch(verificationMessageId);
             await message.edit({ content: newMessage, components: message.components });
-            await interaction.reply({ content: 'Verification message edited!', flags: 64 });
+            await interaction.reply({ embeds: [embeds.successEmbed('Verification message edited!', interaction.guild.members.me.displayHexColor)] });
         } catch(err) {
             console.error(err);
-            await interaction.reply({ content: 'Failed to edit verification message.', flags: 64 });
+            await interaction.reply({ embeds: [embeds.errorEmbed('Failed to edit verification message.')] });
         }
     }
 };

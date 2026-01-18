@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { getGuildData } = require('../../utils/guildDataManager.js');
+const embeds = require('../../interactions/embeds/embeds.js');
 
 /**
  * @command - /rolereqs
@@ -13,7 +14,7 @@ module.exports = {
         await interaction.deferReply();
         try {
             const guildDBData = await getGuildData(interaction.guild.id);
-            if(!guildDBData) return interaction.editReply({ content: "This server is not linked to a Hypixel guild."});
+            if(!guildDBData?.hypixel_guild_id) return interaction.editReply({ embeds: [embeds.guildNotLinked()] });
 
             const roleMappings = guildDBData.role_mappings;
             const sortedRoles = Object.entries(roleMappings)
@@ -28,14 +29,14 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setTitle('Guild Role Requirements')
-                .setColor(interaction.member.displayHexColor)
+                .setColor(interaction.guild.members.me.displayHexColor)
                 .setDescription(description)
                 .setFooter({ text: `Requirements are based on Skyblock Profile level` })
 
             return interaction.editReply({ embeds: [embed], allowedMentions: { roles: [] } });
         } catch(err) {
             console.error("Error fetching role_mappings: ", err);
-            return interaction.editReply({ content: 'An error occured while fetching role requirements.' });
+            return interaction.editReply({ embeds: [embeds.errorEmbed('An error occured while fetching role requirements.')] });
         }
     }
 }

@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { deleteLinkedPlayer, getLinkedPlayer } = require('../../utils/linkedPlayersManager.js');
+const embeds = require('../../interactions/embeds/embeds.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,14 +12,14 @@ module.exports = {
             const targetUser = interaction.options.getUser('user') ?? interaction.user;
 
             const existingLink = await getLinkedPlayer(targetUser.id);
-            if(!existingLink) return interaction.editReply(`**${targetUser.username}** is not linked to any Hypixel Account.`);
+            if(!existingLink) return interaction.editReply({ embeds: [embeds.errorEmbed(`**${targetUser.username}** is not linked to any Hypixel Account.`)] });
 
             // delete from db
             await deleteLinkedPlayer(targetUser.id);
-            await interaction.editReply(`Successfully unlinked **${existingLink.hypixel_name}** from your Discord account.`);
+            await interaction.editReply({ embeds: [embeds.successEmbed(`Successfully unlinked **${existingLink.hypixel_name}** from your Discord account.`, interaction.guild.members.me.displayHexColor)] });
         } catch(err) {
             console.error("Error unlinking player: ", err);
-            await interaction.editReply("An error occured while unlinking the account.");
+            await interaction.editReply({ embeds: [embeds.errorEmbed("An error occured while unlinking the account.")] });
         }
     }
 }

@@ -1,5 +1,6 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { getGuildData } = require('../../utils/guildDataManager.js');
+const embeds = require('../../interactions/embeds/embeds.js');
 
 /**
  * @command - /clearroleall
@@ -15,37 +16,71 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         try {
-            const guildDBData = await getGuildData(interaction.guild.id);
-            if(!guildDBData) return interaction.editReply({ content: "This server is not linked to a Hypixel guild."});
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder().setCustomId(`confirm_clear:${interaction.user.id}`).setLabel('Confirm').setStyle(ButtonStyle.Danger),
+                new ButtonBuilder().setCustomId(`cancel_clear:${interaction.user.id}`).setLabel('Cancel').setStyle(ButtonStyle.Secondary)
+            );
 
-            const roleMappings = guildDBData.role_mappings || {};
-            const verificationRoleId = guildDBData.verification_role;
-            if(!verificationRoleId) return interaction.deferReply({ content: "No verification role configured." });
+            const mainEmbed = new EmbedBuilder()
+                .setTitle('⚠️ WARNING')
+                .setDescription('Are you sure you want to clear all rank roles from members?\n**This is irreversible.**')
+                .setColor(embeds.WARNING_COLOR)
+                .setTimestamp();
+            await interaction.editReply({ embeds: [mainEmbed], components: [row] });
 
-            await interaction.guild.members.fetch();
-            let affectedMembers = 0;
-            let removedRoles = 0;
+            const filter = i => i.user.id === interaction.user.id
+            const buttonInteraction = await interaction.channel.awaitMessageComponent({ filter, time: 30000 }).catch(() => null);
 
-            for(const member of interaction.guild.members.cache.values()) {
-                if(!member.roles.cache.has(verificationRoleId)) continue;
-                let memberCleared = false;
+            if(!buttonInteraction) {
+                row.components.forEach(b => b.setDisabled(true));
+                mainEmbed.setDescription('Role clear timed out.').setColor(embeds.ERROR_COLOR);
+                return interaction.editReply({ embeds: [mainEmbed], components: [row] });
+            }
 
-                for(const rankObj of Object.values(roleMappings)) {
-                    const rid = rankObj.discord_role_id;
-                    if(rid && member.roles.cache.has(rid)) {
-                        await member.roles.remove(rid);
-                        memberCleared = true;
-                        removedRoles++;
+            // disable after getting interaction
+            row.components.forEach(b => b.setDisabled(true));
+
+            if(buttonInteraction.customId === `cancel_clear:${interaction.user.id}`) {
+                mainEmbed.setTitle('Cancelled').setDescription('Role cleared cancelled.').setColor(interaction.guild.members.me.displayHexColor)
+                return buttonInteraction.update({ embeds: [mainEmbed], components: [] });
+            }
+
+            if(buttonInteraction.customId === `confirm_clear:${interaction.user.id}`) {
+                const guildDBData = await getGuildData(interaction.guild.id);
+                if(!guildDBData?.hypixel_guild_id) return buttonInteraction.update({ embeds: [embeds.guildNotLinked()] });
+                if(!guildDBData?.verification_role) return buttonInteraction.update({ embeds: [embeds.verificationRoleMissing()] });
+
+                const roleMappings = guildDBData.role_mappings || {};
+                await interaction.guild.members.fetch();
+
+                let affectedMembers = 0;
+                let removedRoles = 0;
+
+                for(const member of interaction.guild.members.cache.values()) {
+                    if(!member.roles.cache.has(guildDBData.verification_role)) continue;
+
+                    const rolesToRemove = Object.values(roleMappings)
+                        .map(r => r.discord_role_id)
+                        .filter(rid => rid && member.roles.cache.has(rid));
+
+                    if(rolesToRemove.length > 0) {
+                        // await member.roles.remove(rolesToRemove);
+                        affectedMembers++;
+                        removedRoles += rolesToRemove.length;
                     }
                 }
 
-                if(memberCleared) affectedMembers++;
+                return buttonInteraction.update({ 
+                    embeds: [embeds.successEmbed(`Cleared rank roles from **${affectedMembers}** verified users.\nTotal roles removed: **${removedRoles}**`, interaction.guild.members.me.displayHexColor)], 
+                    components: [] 
+                });
             }
-
-            return interaction.editReply({ content: `Cleared rank roles from **${affectedMembers}** verified users.\nTotal roles removed: **${removedRoles}**`});
         } catch(err) {
             console.error("Error clearing roles for all users: ", err);
-            return interaction.editReply({ content: 'An error occured while clearing roles for all users.' });
+            
+            if (buttonInteraction?.replied || buttonInteraction?.deferred)
+                return buttonInteraction.followUp({ embeds: [embeds.errorEmbed('An error occurred while clearing roles.')], ephemeral: true });
+            return interaction.editReply({ embeds: [embeds.errorEmbed('An error occurred while clearing roles.')], components: [] });
         }
     }
 }

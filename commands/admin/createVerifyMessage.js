@@ -1,4 +1,6 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits } = require('discord.js');
+const { getGuildData } = require('../../utils/guildDataManager.js');
+const embeds = require('../../interactions/embeds/embeds.js');
 
 /**
  * @command - /createverifymessage
@@ -14,18 +16,26 @@ module.exports = {
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
         adminOnly: true,
     async execute(interaction) {
-        const content = interaction.options.getString('message');
-        const welcomeChannel = interaction.options.getChannel('channel');
+        try {
+            const content = interaction.options.getString('message');
+            const welcomeChannel = interaction.options.getChannel('channel');
 
-        if(!welcomeChannel || !welcomeChannel.isTextBased())
-            return interaction.reply({ content: 'Invalid channel!', flags: 64 });
+            const guildDBData = await getGuildData(interaction.guild.id);
+            if(!guildDBData?.verification_role) return interaction.deferReply({ embeds: [embeds.errorEmbed('Verification role does not exist!')] });
 
-        const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId('verify_button').setLabel('Verify').setStyle(ButtonStyle.Success)
-        );
-        
-        const messagePayload = {content, components: [row]};
-        const message = await welcomeChannel.send(messagePayload);
-        await interaction.reply({ content: `Verification message created successfully in ${welcomeChannel}` });
+            if(!welcomeChannel || !welcomeChannel.isTextBased())
+                return interaction.reply({ embeds: [embeds.errorEmbed('Invalid channel!')] });
+
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder().setCustomId('verify_button').setLabel('Verify').setStyle(ButtonStyle.Success)
+            );
+            
+            const messagePayload = {content, components: [row]};
+            await welcomeChannel.send(messagePayload);
+            await interaction.reply({ embeds: [embeds.successEmbed(`Verification message created successfully in ${welcomeChannel}`, interaction.guild.members.me.displayHexColor)] });
+        } catch(err) {
+            console.error(err);
+            await interaction.editReply({embeds: [embeds.errorEmbed("An error occured while creating verification message!")] });
+        }
     }
 };

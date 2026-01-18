@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { updateGuildData, getGuildData } = require('../../utils/guildDataManager.js');
+const embeds = require('../../interactions/embeds/embeds.js');
 
 /**
  * @command - /unlinkrole
@@ -15,21 +16,20 @@ module.exports = {
     async execute(interaction) {
         try {
             const guildDBData = await getGuildData(interaction.guild.id);
-            if(!guildDBData?.hypixel_guild_id)
-                return interaction.reply({ content: "This server is not linked to a Hypixel guild.\nPlease run: `/linkGuild <guild name>`"});
+            if(!guildDBData?.hypixel_guild_id) return interaction.editReply({ embeds: [embeds.guildNotLinked()] });
 
             const hypixelRank = interaction.options.getString('hypixel_rank').trim().toUpperCase();
 
             const roleMappings = guildDBData?.role_mappings || {};
             if(!roleMappings[hypixelRank])
-                return interaction.reply({ content: `The guild rank **${hypixelRank}** is not current linked to any discord role!` });
+                return interaction.reply({ embeds: [embeds.errorEmbed(`The guild rank **${hypixelRank}** is not current linked to any discord role!`)] });
             delete roleMappings[hypixelRank];
             await updateGuildData(interaction.guild, { roleMappings });
 
-            await interaction.reply({ content: `Unlinked **${hypixelRank}** from it's discord role successfully!`, allowedMentions: { roles: [] } });
+            await interaction.reply({ embeds: [embeds.successEmbed(`Unlinked **${hypixelRank}** from it's discord role successfully!`, interaction.guild.members.me.displayHexColor)], allowedMentions: { roles: [] } });
         } catch(err) {
             console.error("Failed to pull/update guild data: ", err);
-            await interaction.reply({ content: "An error occurred while unlinking roles." });
+            await interaction.reply({ embeds: [embeds.errorEmbed("An error occurred while unlinking roles.")] });
         }
     }
 }

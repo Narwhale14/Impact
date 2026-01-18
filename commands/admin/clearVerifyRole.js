@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { updateGuildColumn, getGuildData } = require('../../utils/guildDataManager.js');
+const embeds = require('../../interactions/embeds/embeds.js');
 
 /**
  * @command - /clearverifyrole
@@ -14,13 +15,13 @@ module.exports = {
     async execute(interaction) {
         try {
             const guildDBData = await getGuildData(interaction.guild.id);
-            if(!guildDBData?.verification_role) return await interaction.reply({ content: "No verification role is currently set!" });
+            if(!guildDBData?.verification_role) return interaction.reply({ embeds: [embeds.errorEmbed('Verification role does not exist!')] });
 
             await updateGuildColumn(interaction.guild, 'verification_role', null);
-            await interaction.reply({ content: `Verification role set successfully cleared.` });
+            await interaction.reply({ embeds: [embeds.successEmbed('Verification role cleared.', interaction.guild.members.me.displayHexColor)] });
         } catch(err) {
             console.log('Error updating guild data: ', err);
-            await interaction.editReply("An error occured while clearing verification role!");
+            await interaction.reply({embeds: [embeds.errorEmbed("An error occured while clearing verification role!")] });
         }
     }
 }

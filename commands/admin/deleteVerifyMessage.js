@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const embeds = require('../../interactions/embeds/embeds.js');
 
 /**
  * @command - /deleteverifymessage
@@ -7,7 +8,7 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('deleteverifymessage')
-        .setDescription('Deletes the verification message')
+        .setDescription('Deletes a verification message')
         .addChannelOption(option => option.setName('channel').setDescription('Channel of the verification message').setRequired(true))
         .addStringOption(option => option.setName('id').setDescription('ID of the verification message').setRequired(true))
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
@@ -15,15 +16,15 @@ module.exports = {
     async execute(interaction) {
         const channel = interaction.options.getChannel('channel');
         const verificationMessageId = await interaction.options.getString('id')
-        if (!verificationMessageId) return interaction.reply({ content: 'Verification message does not exist!', flags: 64 });
+        if (!verificationMessageId) return interaction.reply({ embeds: [embeds.errorEmbed('Verification message does not exist!')] });
 
         try {
             const message = await channel.messages.fetch(verificationMessageId);
             await message.delete();
-            await interaction.reply({ content: 'Verification message deleted!', flags: 64 });
+            await interaction.reply({ embeds: [embeds.successEmbed('Verification message deleted!', interaction.guild.members.me.displayHexColor)] });
         } catch(err) {
             console.error(err);
-            await interaction.reply({ content: 'Failed to delete verification message.', flags: 64 });
+            await interaction.reply({ embeds: [embeds.errorEmbed('Failed to delete verification message.')] });
         }
     }
 };

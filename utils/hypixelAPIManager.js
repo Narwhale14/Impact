@@ -77,10 +77,9 @@ async function getProfileSkyblockLevelByUUID(playerUUID, profileName) {
         const targetProfile = profileName?.toLowerCase();
         const filteredProfiles = data.profiles.filter(p => p.cute_name?.toLowerCase() === targetProfile);
         if(filteredProfiles.length === 0)
-            throw new Error(targetProfile ? `Profile ${profileName}" not found` : `No Skyblock profiles found`);
+            throw new Error(targetProfile ? `Profile "${profileName}" not found!` : `No Skyblock profiles found`);
 
         const member = filteredProfiles[0].members[playerUUID];
-        if(!member) throw new Error(`Player not found in profile ${filteredProfiles[0].cute_name}`);
 
         return {
             level: (member.leveling?.experience / 100) ?? 0,
