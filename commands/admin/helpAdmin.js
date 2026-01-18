@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 
 /**
  * @command - /helpadmin
@@ -7,7 +7,8 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('helpadmin')
-        .setDescription('Lists all available admin commands'),
+        .setDescription('Lists all available admin commands')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
         adminOnly: true,
     async execute(interaction) {
         const commands = [...interaction.client.commands.values()]
