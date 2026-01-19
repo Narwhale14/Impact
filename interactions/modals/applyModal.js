@@ -1,7 +1,8 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { getGuildData } = require('../../utils/guildDataManager.js');
-const { getUUIDFromName, getProfileSkyblockLevelByUUID } = require('../../utils/hypixelAPIManager.js');
-const { updateOpenApplications } = require('../../utils/openApplicationsManager.js');
+const { getGuildData } = require('../../utils/DBManagers/guildDataManager.js');
+const { getProfileSkyblockLevelByUUID } = require('../../utils/APIManagers/hypixelAPIManager.js');
+const { getUUIDFromName } = require('../../utils/APIManagers/minecraftAPIManager.js');
+const { updateOpenApplications } = require('../../utils/DBManagers/openApplicationsManager.js');
 const embeds = require('../embeds.js');
 
 module.exports = {
@@ -44,7 +45,7 @@ module.exports = {
             const appMessage = await logsChannel.send({ embeds: [mainEmbed], components: [buttonRow] });
 
             await updateOpenApplications({
-                guildDataId: guildDBData.discord_server_id,
+                guildDataId: guildDBData.id,
                 logsMessageId: appMessage.id,
                 discordUserId: interaction.user.id,
                 minecraftName: name,

@@ -1,4 +1,4 @@
-const { pool } = require('../database.js');
+const { pool } = require('../../database.js');
 
 /**
  * Helper function that updates ALL guild data, accepting 1 or more of the table contents

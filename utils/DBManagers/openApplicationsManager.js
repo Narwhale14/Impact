@@ -1,4 +1,4 @@
-const { pool } = require('../database.js');
+const { pool } = require('../../database.js');
 
 async function updateOpenApplications({ guildDataId, logsMessageId, discordUserId, minecraftName, profileName }) {
     try {

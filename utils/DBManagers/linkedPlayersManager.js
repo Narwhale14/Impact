@@ -1,4 +1,4 @@
-const { pool } = require('../database.js');
+const { pool } = require('../../database.js');
 
 async function updateLinkedPlayers({ discordId, hypixelUUID, hypixelName, guildDataId }) {
     try {

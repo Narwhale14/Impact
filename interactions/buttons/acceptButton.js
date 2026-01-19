@@ -1,4 +1,4 @@
-const { getGuildData } = require('../../utils/guildDataManager.js');
+const { getGuildData } = require('../../utils/DBManagers/guildDataManager.js');
 const embeds = require('../embeds.js');
 
 module.exports = {
