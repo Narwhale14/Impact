@@ -1,11 +1,16 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { updateGuildData, getGuildData } = require('../../utils/guildDataManager.js');
+const { updateGuildData, getGuildData, updateGuildColumn } = require('../../utils/guildDataManager.js');
 const { getGuildById } = require('../../utils/hypixelAPIManager.js');
 const embeds = require('../../interactions/embeds.js');
 
 /**
  * @command - /rank
  * manages linking discord roles to ingame ranks
+ * 
+ * /rank link
+ * /rank unlink
+ * /rank updatereq
+ * /rank clearall
  */
 module.exports = {
     data: new SlashCommandBuilder()
@@ -28,7 +33,7 @@ module.exports = {
             .addStringOption(option => option.setName('hypixel_rank').setDescription('Guild rank').setRequired(true))
             .addIntegerOption(option => option.setName('requirement').setDescription('Skyblock level requirement').setMinValue(0).setRequired(true)))
         .addSubcommand(sub => sub
-            .setName('clearroleall')
+            .setName('clearall')
             .setDescription('Clears discord role based on guild rank from ALL users')),
         adminOnly: true,
         dangerousSubcommands: ['clearroleall'],
@@ -59,7 +64,7 @@ module.exports = {
             }
 
             try {
-                await updateGuildData(interaction.guild, { roleMappings });
+                await updateGuildColumn(interaction.guild, 'role_mappings', roleMappings);
 
                 const requirementText = requirement !== null ? ` (Level Requirement: **${requirement}**)` : '';
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Linked **${hypixelRank}** to <@&${discordRole.id}> successfully!${requirementText}`, interaction.guild.members.me.displayHexColor)], allowedMentions: { roles: [] } });
@@ -79,7 +84,7 @@ module.exports = {
                 delete roleMappings[hypixelRank];
 
             try {
-                await updateGuildData(interaction.guild, { roleMappings });
+                await updateGuildColumn(interaction.guild, 'role_mappings', roleMappings);
 
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Unlinked **${hypixelRank}** from it's discord role successfully!`, interaction.guild.members.me.displayHexColor)], allowedMentions: { roles: [] } });
             } catch(err) {
@@ -104,7 +109,7 @@ module.exports = {
             roleMappings[hypixelRank].level_requirement = newRequirement;
 
             try {
-                await updateGuildData(interaction.guild, { roleMappings });
+                await updateGuildColumn(interaction.guild, 'role_mappings', roleMappings);
 
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Updated the **${hypixelRank}** level requirement to **${newRequirement}**.`, interaction.guild.members.me.displayHexColor)] });
             } catch(err) {
@@ -113,8 +118,8 @@ module.exports = {
             } 
         }
 
-        // clearroleall subcommand
-        if(subcommand === 'clearroleall') {
+        // clearall subcommand
+        if(subcommand === 'clearall') {
             const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder().setCustomId(`confirm_clear:${interaction.user.id}`).setLabel('Confirm').setStyle(ButtonStyle.Danger),
                 new ButtonBuilder().setCustomId(`cancel_clear:${interaction.user.id}`).setLabel('Cancel').setStyle(ButtonStyle.Secondary)
@@ -132,8 +137,8 @@ module.exports = {
 
             if(!buttonInteraction) {
                 row.components.forEach(b => b.setDisabled(true));
-                mainEmbed.setDescription('Role clear timed out.').setColor(embeds.ERROR_COLOR);
-                return interaction.editReply({ embeds: [mainEmbed], components: [row] });
+                mainEmbed.setTitle('ERROR').setDescription('Role clear timed out.').setColor(embeds.ERROR_COLOR);
+                return interaction.editReply({ embeds: [mainEmbed], components: [] });
             }
 
             // disable after getting interaction

@@ -24,7 +24,7 @@ module.exports = {
             if(subcommands && subcommands.length > 0) {
                 command.data.options.filter(option => option.constructor.name === 'SlashCommandSubcommandBuilder').forEach(sub => { 
                     helpEmbed.addFields({
-                        name: `/${command.data.name} ${sub.name}}`,
+                        name: `/${command.data.name} ${sub.name}`,
                         value: `${sub.description}`,
                         inline: false
                     });

@@ -10,14 +10,14 @@ module.exports = {
     // super specific one
     guildNotLinked: () => {
         return new EmbedBuilder()
-            .setTitle('Error')
+            .setTitle('ERROR')
             .setDescription('Discord server is not linked to a Hypixel guild!')
             .setColor(ERROR_COLOR)
             .setTimestamp()
     },
 
     // success message
-    successEmbed: (message, color, title = 'Success') => {
+    successEmbed: (message, color, title = 'SUCCESS') => {
         return new EmbedBuilder()
             .setTitle(title)
             .setDescription(message)

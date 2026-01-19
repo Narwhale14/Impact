@@ -1,29 +1,41 @@
 const { pool } = require('../database.js');
 
 /**
- * Helper function that updates guild data, accepting 1 or more of the table contents
+ * Helper function that updates ALL guild data, accepting 1 or more of the table contents
  * @param {*} guild guild object (interaction.guild)
  * @param {*} param1 table contents
  */
-async function updateGuildData(guild, { verificationRoleId, roleMappings, hypixelGuildId, applicationChannelId }) {
+async function updateGuildData(guild, { verificationRoleId, roleMappings, hypixelGuildId, applicationChannelId, requestsEnabled, requestsChannel }) {
     try {
         await pool.query(
-            `INSERT INTO guild_data (discord_server_id, discord_server_name, verification_role, role_mappings, hypixel_guild_id, application_channel_id)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            `INSERT INTO guild_data (
+                discord_server_id, 
+                discord_server_name, 
+                verification_role, 
+                role_mappings, 
+                hypixel_guild_id, 
+                application_channel_id, 
+                requests_enabled, 
+                requests_channel)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             ON CONFLICT (discord_server_id)
             DO UPDATE SET
                 discord_server_name = COALESCE($2, guild_data.discord_server_name),
                 verification_role = COALESCE($3, guild_data.verification_role),
                 role_mappings = COALESCE($4, guild_data.role_mappings),
                 hypixel_guild_id = COALESCE($5, guild_data.hypixel_guild_id),
-                application_channel_id = COALESCE($6, guild_data.application_channel_id)`,
+                application_channel_id = COALESCE($6, guild_data.application_channel_id),
+                requests_enabled = COALESCE($7, guild_data.requests_enabled),
+                requests_channel = COALESCE($8, requests_channel)`,
             [
                 guild.id, 
                 guild.name,
                 verificationRoleId || null, 
                 roleMappings ? JSON.stringify(roleMappings) : null,
                 hypixelGuildId || null,
-                applicationChannelId || null
+                applicationChannelId || null,
+                requestsEnabled || false,
+                requestsChannel || null
             ]
         );
     } catch(err) {
@@ -33,7 +45,8 @@ async function updateGuildData(guild, { verificationRoleId, roleMappings, hypixe
 }
 
 /**
- * Gets a piece of data from the guild_data table
+ * Gets a piece of data from the guild_data table. works as the same function above, updates only one column
+ * can also create new entries
  * @param {*} guild interaction.guild
  * @returns the data
  */
@@ -70,11 +83,27 @@ async function getGuildData(guild) {
  * @param {*} value value to set (pass null to erase)
  */
 async function updateGuildColumn(guild, columnName, value) {
-    try {
-        // lets function accept either discord guild obj or id
-        const guildId = typeof guild === 'string' ? guild : guild?.id;
-        const guildName = typeof guild === 'object' ? guild.name : null;
+    const guildId = typeof guild === 'string' ? guild : guild?.id;
+    const guildName = typeof guild === 'object' ? guild.name : null;
+    let dbValue;
 
+    const allowedColumns = [
+        'verification_role',
+        'role_mappings',
+        'hypixel_guild_id',
+        'application_channel_id',
+        'requests_enabled',
+        'requests_channel'
+    ];
+
+    const jsonColumns = ['role_mappings'];
+
+    // handle JSON automatically for specific columns
+    if(jsonColumns.includes(columnName) && value !== null && value !== undefined)
+        dbValue = JSON.stringify(value);
+
+    try {
+        if(!allowedColumns.includes(columnName)) throw new Error('Invalid column name!');
         if(!guildId) throw new Error('nullifyGuildColumn called without valid guildId');
 
         const res = await pool.query(
@@ -88,12 +117,12 @@ async function updateGuildColumn(guild, columnName, value) {
                 `INSERT INTO guild_data (discord_server_id, discord_server_name, ${columnName})
                 VALUES ($1, $2, $3)
                 ON CONFLICT (discord_server_id) DO NOTHING`,
-                [guildId, guildName, value]
+                [guildId, guildName, dbValue]
             );
         } else {
             await pool.query(
-                `UPDATE guild_data SET ${columnName} = $1 WHERE discord_server_id = $2`,
-                [value, guildId]
+                `UPDATE guild_data SET ${columnName} = COALESCE($1, ${columnName}) WHERE discord_server_id = $2`,
+                [dbValue, guildId]
             )
         }
     } catch(err) {

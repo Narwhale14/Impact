@@ -3,8 +3,11 @@ const { updateGuildColumn, getGuildData } = require('../../utils/guildDataManage
 const embeds = require('../../interactions/embeds.js');
 
 /**
- * @command - /applications
+ * @command - /application
  * guildappchannel stuff
+ * 
+ * /application setchannel
+ * /application clearchannel
  */
 module.exports = {
     data: new SlashCommandBuilder()

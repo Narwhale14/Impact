@@ -6,6 +6,12 @@ const embeds = require('../../interactions/embeds.js');
  * @command - /editverifymessage
  * directly edits a verification message in a specific channel by ID and channel
  * can also set/clear verification role
+ * 
+ * /verification create
+ * /verification edit
+ * /verification delete
+ * /verification setrole
+ * /verification clearrole
  */
 module.exports = {
     data: new SlashCommandBuilder()

@@ -6,6 +6,9 @@ const embeds = require('../../interactions/embeds.js');
 /**
  * @command - /guild
  * Settings for discord guild and hypixel guild link
+ * 
+ * /guild link
+ * /guild unlink
  */
 module.exports = {
     data: new SlashCommandBuilder()
@@ -66,8 +69,8 @@ module.exports = {
 
                 if(!buttonInteraction) {
                     row.components.forEach(b => b.setDisabled(true));
-                    mainEmbed.setDescription('Unlink timed out').setColor(embeds.ERROR_COLOR);
-                    return interaction.editReply({ embeds: [mainEmbed], components: [row] });
+                    mainEmbed.setTitle('ERROR').setDescription('Unlink timed out').setColor(embeds.ERROR_COLOR);
+                    return interaction.editReply({ embeds: [mainEmbed], components: [] });
                 }
 
                 // atp button interaction is stored, disable buttons
