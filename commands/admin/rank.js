@@ -36,7 +36,7 @@ module.exports = {
             .setName('clearall')
             .setDescription('Clears discord role based on guild rank from ALL users')),
         adminOnly: true,
-        dangerousSubcommands: ['clearroleall'],
+        dangerousSubcommands: ['clearall'],
     async execute(interaction) {
         await interaction.deferReply();
         const subcommand = interaction.options.getSubcommand();
