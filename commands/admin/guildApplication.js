@@ -3,15 +3,22 @@ const { updateGuildColumn, getGuildData } = require('../../utils/guildDataManage
 const embeds = require('../../interactions/embeds/embeds.js');
 
 /**
- * @command - /setguildappchannel
- * sets the default guild requests channel
+ * @command - /guildappchannel
+ * guildappchannel stuff
  */
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('setguildappchannel')
-        .setDescription('Sets channel to use for guild rank and application requests')
-        .addChannelOption(option => option.setName('channel').setDescription('Channel of choice').setRequired(true))
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        .setName('guildapplication')
+        .setDescription('Manages channel to use for guild rank and application requests')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+        .addSubcommand(sub => sub
+            .setName('setchannel')
+            .setDescription('Sets the guild application channel')
+            .addChannelOption(option => option.setName('channel').setDescription('Channel for guild application message').setRequired(true)))
+        .addSubcommand(sub => sub
+            .setName('clearchannel')
+            .setDescription('Clears the guild application channel')
+            .addChannelOption(option => option.setName('channel').setDescription('Channel of guild application message').setRequired(true))),
         adminOnly: true,
     async execute(interaction) {
         try {

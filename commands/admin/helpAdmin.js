@@ -20,12 +20,24 @@ module.exports = {
             .setColor(interaction.guild.members.me.displayHexColor)
             .setFooter({ text: 'For user commands, send /help' });
 
-        commands.forEach(cmd => {
-            helpEmbed.addFields({
-                name: `/${cmd.data.name}${cmd.dangerous === true ? ' ⚠️ [DANGEROUS] ' : ''}`,
-                value: cmd.data.description || 'No description provided',
-                inline: false
-            });
+        commands.forEach(command => {
+            const subcommands = command.data.options?.filter(option => option.constructor.name === 'SlashCommandSubcommandBuilder');
+            if(subcommands && subcommands.length > 0) {
+                command.data.options.filter(option => option.constructor.name === 'SlashCommandSubcommandBuilder').forEach(sub => { 
+                    const isDangerous = command.dangerousSubcommands?.includes(sub.name);
+                    helpEmbed.addFields({
+                        name: `/${command.data.name} ${sub.name}${isDangerous === true ? ' ⚠️ [DANGEROUS] ' : ''}`,
+                        value: `${sub.description}`,
+                        inline: false
+                    });
+                });
+            } else {
+                helpEmbed.addFields({
+                    name: `/${command.data.name}${command.dangerous === true ? ' ⚠️ [DANGEROUS] ' : ''}`,
+                    value: command.data.description || 'No description provided',
+                    inline: false
+                });
+            }
         });
 
         await interaction.reply({ embeds: [helpEmbed] });
