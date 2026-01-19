@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, InteractionResponse } = require('discord.js');
 const { getGuildData } = require('../../utils/guildDataManager.js');
 const embeds = require('../../interactions/embeds.js');
 
@@ -29,18 +29,20 @@ module.exports = {
             .addStringOption(option => option.setName('id').setDescription('Verification message ID').setRequired(true))),
         adminOnly: true,
     async execute(interaction) {
+        await interaction.deferReply();
         const subcommand = interaction.options.getSubcommand();
-        const message = interaction.options.getString('message');
-        const channel = interaction.options.getChannel('channel');
-        const messageId = interaction.options.getString('id')
 
         try {
             const guildDBData = await getGuildData(interaction.guild.id);
 
+            const channel = interaction.options.getChannel('channel');
+            if(!channel || !channel.isTextBased()) return interaction.editReply({ embeds: [embeds.errorEmbed('Please select a **text** channel')] });
+
             // create subcommand
             if(subcommand === 'create') {
-                if(!guildDBData?.verification_role) return interaction.reply({ embeds: [embeds.errorEmbed('Verification role does not exist!')] });
-                if(!channel || !channel.isTextBased()) return interaction.reply({ embeds: [embeds.errorEmbed('Invalid channel!')] });
+                const message = interaction.options.getString('message');
+
+                if(!guildDBData?.verification_role) return interaction.editReply({ embeds: [embeds.errorEmbed('Verification role does not exist!')] });
 
                 const row = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('verify_button').setLabel('Verify').setStyle(ButtonStyle.Success)
@@ -48,29 +50,40 @@ module.exports = {
                 
                 const messagePayload = {content: message, components: [row]};
                 await channel.send(messagePayload);
-                await interaction.reply({ embeds: [embeds.successEmbed(`Verification message created successfully in ${channel}`, interaction.guild.members.me.displayHexColor)] });
+                await interaction.editReply({ embeds: [embeds.successEmbed(`Verification message created successfully in ${channel}`, interaction.guild.members.me.displayHexColor)] });
             }
 
             // edit subcommand
             if(subcommand == 'edit') {
-                if (!messageId) return interaction.reply({ embeds: [embeds.errorEmbed('Verification message does not exist!')] });
+                const message = interaction.options.getString('message');
+                const messageId = interaction.options.getString('id');
 
-                const targetMessage = await channel.messages.fetch(messageId);
-                await targetMessage.edit({ content: message, components: message.components });
-                await interaction.reply({ embeds: [embeds.successEmbed('Verification message edited!', interaction.guild.members.me.displayHexColor)] });
+                try {
+                    const targetMessage = await channel.messages.fetch(messageId);
+                    await targetMessage.edit({ content: message, components: targetMessage.components });
+                } catch {
+                    return interaction.editReply({ embeds: [embeds.errorEmbed('Message not found in this channel')] });
+                }
+
+                await interaction.editReply({ embeds: [embeds.successEmbed('Verification message edited!', interaction.guild.members.me.displayHexColor)] });
             }
 
             // delete subcommand
             if(subcommand == 'delete') {
-                if (!messageId) return interaction.reply({ embeds: [embeds.errorEmbed('Verification message does not exist!')] });
+                const messageId = interaction.options.getString('id');
 
-                const targetMessage = await channel.messages.fetch(messageId);
-                await targetMessage.delete();
-                await interaction.reply({ embeds: [embeds.successEmbed('Verification message deleted!', interaction.guild.members.me.displayHexColor)] });
+                try {
+                    const targetMessage = await channel.messages.fetch(messageId);
+                    await targetMessage.delete();
+                } catch {
+                    return interaction.editReply({ embeds: [embeds.errorEmbed('Message not found in this channel')] });
+                }
+
+                await interaction.editReply({ embeds: [embeds.successEmbed('Verification message deleted!', interaction.guild.members.me.displayHexColor)] });
             }
         } catch(err) {
             console.error(err);
-            await interaction.reply({ embeds: [embeds.errorEmbed('Failed to edit verification message.')] });
+            await interaction.editReply({ embeds: [embeds.errorEmbed('Failed to manage verification message. Make sure you input a valid message ID!')] });
         }
     }
 };
