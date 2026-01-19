@@ -2,10 +2,12 @@ const { EmbedBuilder } = require('discord.js');
 
 const ERROR_COLOR = 0xED4245;
 const WARNING_COLOR = 0xFEE75C;
+const SUCCESS_COLOR = 0x57F287;
 
 module.exports = {
     ERROR_COLOR,
     WARNING_COLOR,
+    SUCCESS_COLOR,
     
     // super specific one
     guildNotLinked: () => {
@@ -17,7 +19,7 @@ module.exports = {
     },
 
     // success message
-    successEmbed: (message, color, title = 'SUCCESS') => {
+    successEmbed: (message, color = SUCCESS_COLOR, title = 'SUCCESS' ) => {
         return new EmbedBuilder()
             .setTitle(title)
             .setDescription(message)

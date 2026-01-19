@@ -91,4 +91,10 @@ async function getProfileSkyblockLevelByUUID(playerUUID, profileName) {
     }
 }
 
-module.exports = { getGuildByName, getGuildById, getPlayerByName, getMemberInGuildByPlayerUUID, getProfileSkyblockLevelByUUID };
+module.exports = { 
+    getGuildByName, 
+    getGuildById, 
+    getPlayerByName, 
+    getMemberInGuildByPlayerUUID, 
+    getProfileSkyblockLevelByUUID
+};

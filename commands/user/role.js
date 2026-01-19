@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { getGuildData } = require('../../utils/guildDataManager.js');
-const { getLinkedPlayer } = require('../../utils/linkedPlayersManager.js');
-const { getProfileSkyblockLevelByUUID, getMemberInGuildByPlayerUUID } = require('../../utils/hypixelAPIManager.js');
+const { getGuildData } = require('../../utils/DBManagers/guildDataManager.js');
+const { getLinkedPlayer } = require('../../utils/DBManagers/linkedPlayersManager.js');
+const { getProfileSkyblockLevelByUUID, getMemberInGuildByPlayerUUID } = require('../../utils/APIManagers/hypixelAPIManager.js');
 const { getEligibleRoleId, removeMappedRoles } = require('../../utils/roleHelpers.js');
 const embeds = require('../../interactions/embeds.js');
 

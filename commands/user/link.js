@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { getGuildData } = require('../../utils/guildDataManager.js');
-const { updateLinkedPlayers } = require(`../../utils/linkedPlayersManager.js`);
-const { getPlayerByName, getMemberInGuildByPlayerUUID } = require('../../utils/hypixelAPIManager.js');
+const { getGuildData } = require('../../utils/DBManagers/guildDataManager.js');
+const { updateLinkedPlayers } = require(`../../utils/DBManagers/linkedPlayersManager.js`);
+const { getPlayerByName, getMemberInGuildByPlayerUUID } = require('../../utils/APIManagers/hypixelAPIManager.js');
 const embeds = require('../../interactions/embeds.js');
 
 /**

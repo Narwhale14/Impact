@@ -1,6 +1,5 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
-const { updateGuildColumn, getGuildData } = require('../../utils/guildDataManager.js');
-const { sendButtonMessage, editBotMessage } = require('../../utils/interactionHelpers.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { updateGuildColumn, getGuildData } = require('../../utils/DBManagers/guildDataManager.js');
 const embeds = require('../../interactions/embeds.js');
 
 /**
@@ -75,14 +74,12 @@ module.exports = {
             channelColumn = 'application_channel_id';
             channelString = 'application channel';
         } else if(group === 'log') {
-            channelColumn = 'application_channel_id';
-            channelString = 'requests channel';
+            channelColumn = 'logs_channel_id';
+            channelString = 'logs channel';
         }
 
         // apps channel/logs set subcommands
         if(sub === 'set') {
-            if(guildDBData?.[channelColumn]) 
-                return interaction.editReply({ embeds: [embeds.errorEmbed(`Guild ${channelString} is already set to <#${guildDBData[channelColumn]}>.`)] });
             const channel = interaction.options.getChannel('channel');
             if(!channel) return interaction.editReply({ embeds: [embeds.errorEmbed(`Invalid guild ${channelString}.`)] });
 
@@ -91,21 +88,20 @@ module.exports = {
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Guild ${channelString} set successfully to <#${channel.id}>!`, interaction.guild.members.me.displayHexColor)] });
             } catch(err) {
                 console.error("Failed running '/apps <subcommandGroup> set': ", err);
-                await interaction.editReply({ embeds: [embeds.errorEmbed(`An error occurred while setting guild ${channelString}.`)] });
+                await interaction.editReply({ embeds: [embeds.errorEmbed(`An error occurred while setting guild ${channelString}.`, err.message)] });
             } 
         }
 
         // apps channel/logs clear subcommands
         if(sub === 'clear') {
-            if(!guildDBData?.[channelColumn]) 
-                return interaction.editReply({ embeds: [embeds.errorEmbed(`Guild ${channelString} not set yet!`)] });
+            if(!guildDBData?.[channelColumn]) return interaction.editReply({ embeds: [embeds.errorEmbed(`Guild ${channelString} not set yet!`)] });
 
             try {
                 await updateGuildColumn(interaction.guild, channelColumn, null);
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Guild ${channelString} connection cleared.`, interaction.guild.members.me.displayHexColor)] });
             } catch(err) {
                 console.error("Failed running '/apps <subcommandGroup> clear': ", err);
-                await interaction.editReply({ embeds: [embeds.errorEmbed(`An error occurred while clearing guild ${channelString}.`)] });
+                await interaction.editReply({ embeds: [embeds.errorEmbed(`An error occurred while clearing guild ${channelString}.`, err.message)] });
             } 
         }
 
@@ -121,7 +117,7 @@ module.exports = {
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Toggled role requests to **${rolesToggle}**!\nThey will be sent in <#${guildDBData.logs_channel_id}>`, interaction.guild.members.me.displayHexColor)] });
             } catch(err) {
                 console.error("Failed running '/apps log roles'", err);
-                await interaction.editReply({ embeds: [embeds.errorEmbed(`An error occured while toggling role logs!`)] });
+                await interaction.editReply({ embeds: [embeds.errorEmbed(`An error occured while toggling role logs!`, err.message)] });
             }
         }
 
@@ -131,14 +127,22 @@ module.exports = {
             if(sub === 'create') {
                 const message = interaction.options.getString('message');
                 const channel = interaction.options.getChannel('channel');
-                if(!guildDBData?.guild_member_role) return interaction.editReply({ embeds: [embeds.errorEmbed('Application role does not exist!')] });
+                if(!guildDBData?.guild_member_role) return interaction.editReply({ embeds: [embeds.errorEmbed('Application role does not exist!\nPlease run: \`/applications setrole <role>\`')] });
+                if(!guildDBData?.logs_channel_id) return interaction.editReply({ embeds: [embeds.errorEmbed('No channel set to send application notifications to!\nPlease run: \`/applications log set <channel>\`')] });
+                if(!channel || !channel.isTextBased()) return interaction.editReply({ embeds: [embeds.errorEmbed('Please select a **text** channel')] });
+                
+                const row = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('apply_button').setLabel('Apply').setStyle(ButtonStyle.Success)
+                );
+                    
+                const payload = { content: message, components: [row]};
     
                 try {
-                    await sendButtonMessage(channel, message, 'apply_button', 'Apply');
+                    await channel.send(payload);
                     await interaction.editReply({ embeds: [embeds.successEmbed(`Application message created successfully in ${channel}`, interaction.guild.members.me.displayHexColor)] });
                 } catch(err) {
                     console.error("Failed running '/applications message create': ", err);
-                    return interaction.editReply({ embeds: [embeds.errorEmbed(`Unable to send message in this channel!\nCheck my bot perms and double check that I have message perms in ${channel}!`)] });
+                    return interaction.editReply({ embeds: [embeds.errorEmbed(`Unable to send message in this channel!\nCheck my bot perms and double check that I have message perms in ${channel}!`, err.message)] });
                 }
             }
 
@@ -147,13 +151,16 @@ module.exports = {
                 const message = interaction.options.getString('message');
                 const messageId = interaction.options.getString('id');
                 const channel = interaction.options.getChannel('channel');
+
+                if(!channel || !channel.isTextBased()) return interaction.editReply({ embeds: [embeds.errorEmbed('Please select a **text** channel')] });
     
                 try {
-                    await editBotMessage(channel, message, messageId);
+                    const targetMessage = await channel.messages.fetch(messageId);
+                    await targetMessage.edit({ content: message, components: targetMessage.components });
                     await interaction.editReply({ embeds: [embeds.successEmbed('Application message edited!', interaction.guild.members.me.displayHexColor)] });
                 } catch {
                     console.error("Failed running '/applications message edit': ", err);
-                    return interaction.editReply({ embeds: [embeds.errorEmbed('Message not found in this channel')] });
+                    return interaction.editReply({ embeds: [embeds.errorEmbed('Message not found in this channel', err.message)] });
                 }
             }
         }
@@ -169,7 +176,7 @@ module.exports = {
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Application role set successfully to <@&${applyRole.id}>!`, interaction.guild.members.me.displayHexColor)], allowedMentions: { roles: [] } });
             } catch(err) {
                 console.error("Failed running '/applications setrole': ", err);
-                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while setting application role.")] });
+                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while setting application role.", err.message)] });
             } 
         }
 
@@ -182,7 +189,7 @@ module.exports = {
                 await interaction.editReply({ embeds: [embeds.successEmbed('Set application role cleared.', interaction.guild.members.me.displayHexColor)] });
             } catch(err) {
                 console.error("Failed running '/application clearrole': ", err);
-                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while clearing application role.")] });
+                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while clearing application role.", err.message)] });
             } 
         }
     }

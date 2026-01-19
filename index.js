@@ -2,6 +2,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { Client, GatewayIntentBits, Collection, PermissionFlagsBits } = require('discord.js');
+const embeds = require('./interactions/embeds');
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
@@ -26,7 +27,7 @@ const loadCommands = (dir, category = null) => {
 
 loadCommands(path.join(__dirname, 'commands'));
 
-// buttons collection init
+// buttons collection
 client.buttons = new Collection();
 const buttonsPath = path.join(__dirname, 'interactions', 'buttons');
 const buttonFiles = fs.readdirSync(buttonsPath).filter(file => file.endsWith('.js'));
@@ -34,6 +35,16 @@ const buttonFiles = fs.readdirSync(buttonsPath).filter(file => file.endsWith('.j
 for(const file of buttonFiles) {
     const button = require(`./interactions/buttons/${file}`);
     client.buttons.set(button.customId, button);
+}
+
+// modals collection
+client.modals = new Collection();
+const modalsPath = path.join(__dirname, 'interactions', 'modals');
+const modalFiles = fs.readdirSync(modalsPath).filter(file => file.endsWith('.js'));
+
+for(const file of modalFiles) {
+    const modal = require(`./interactions/modals/${file}`);
+    client.modals.set(modal.customId, modal);
 }
 
 // ready event (bot comes online)
@@ -46,13 +57,13 @@ client.on('interactionCreate', async interaction => {
         const command = client.commands.get(interaction.commandName);
         if (!command) return;
         if(command.adminOnly && !interaction.member.permissions.has(PermissionFlagsBits.Administrator))
-            return interaction.reply({ content: 'This command is restrcited to staff only.', flags: 64 });
+           await interaction.reply({ embeds: [embeds.errorEmbed('This command is restricted to admin only!')], flags: 64 });
 
         try { 
             await command.execute(interaction);
         } catch(err) {
             console.error(err);
-            interaction.reply({ content: 'There was an error executing that command', flag: 64 });
+            await interaction.reply({ embeds: [embeds.errorEmbed('Error handling command: ', err)], flags: 64 });
         }
 
         return;
@@ -66,9 +77,25 @@ client.on('interactionCreate', async interaction => {
             await button.execute(interaction);
         } catch(err) {
             console.error(err);
-            interaction.reply({ content: 'There was an error handling that button', flag: 64 });
+            await interaction.reply({ embeds: [embeds.errorEmbed('Error handling button: ', err)], flags: 64 });
         }
         return;
+    }
+
+    if(interaction.isModalSubmit()) {
+        const modal = client.modals.get(interaction.customId);
+        if(!modal) return;
+
+        try {
+            await modal.execute(interaction);
+        } catch(err) {
+            console.error(err);
+
+            if(interaction.replied || interaction.deferred)
+                await interaction.followUp({ embeds: [embeds.errorEmbed('Error handling modal: ', err)], flags: 64 });
+            else 
+                await interaction.reply({ embeds: [embeds.errorEmbed('Error handling modal: ', err)], flags: 64 });
+        }
     }
 });
 

@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
-const { getGuildData, updateGuildColumn } = require('../../utils/guildDataManager.js');
-const { getGuildByName } = require('../../utils/hypixelAPIManager.js');
+const { getGuildData, updateGuildColumn } = require('../../utils/DBManagers/guildDataManager.js');
+const { getGuildByName } = require('../../utils/APIManagers/hypixelAPIManager.js');
 const embeds = require('../../interactions/embeds.js');
 
 /**
@@ -42,7 +42,7 @@ module.exports = {
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Successfully linked guild **${guildName}** to this server!`, interaction.guild.members.me.displayHexColor)] });
             } catch(err) {
                 console.error("Failed running '/guild link': ", err);
-                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while linking guild.")] });
+                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while linking guild.", err.message)] });
             } 
         }
 
@@ -93,7 +93,7 @@ module.exports = {
                 }
             } catch(err) {
                 console.error("Failed running '/guild unlink': ", err);
-                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while unlinking guild.")] });
+                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while unlinking guild.", err.message)] });
             } 
         }
     }

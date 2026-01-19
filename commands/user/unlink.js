@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { deleteLinkedPlayer, getLinkedPlayer } = require('../../utils/linkedPlayersManager.js');
+const { deleteLinkedPlayer, getLinkedPlayer } = require('../../utils/DBManagers/linkedPlayersManager.js');
 const embeds = require('../../interactions/embeds.js');
 
 module.exports = {

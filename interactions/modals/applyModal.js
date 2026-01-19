@@ -1,0 +1,61 @@
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { getGuildData } = require('../../utils/guildDataManager.js');
+const { getUUIDFromName, getProfileSkyblockLevelByUUID } = require('../../utils/hypixelAPIManager.js');
+const { updateOpenApplications } = require('../../utils/openApplicationsManager.js');
+const embeds = require('../embeds.js');
+
+module.exports = {
+    customId: 'apply_modal',
+    async execute(interaction) {
+        const guildDBData = await getGuildData(interaction.guild);
+        const logsChannel = interaction.guild.channels.cache.get(guildDBData?.logs_channel_id);
+        if(!logsChannel || !logsChannel.isTextBased())
+            return interaction.reply({ embeds: [embeds.errorEmbed(`Unable to notify staff about your application\nPlease ping a staff for help.`)], flags: 64 });
+
+        const name = interaction.fields.getTextInputValue('minecraft_user_input');
+        const profileName = interaction.fields.getTextInputValue('skyblock_profile_name');
+
+        const mainEmbed = new EmbedBuilder()
+            .setTitle(`New Application!`)
+            .setDescription(`Application for <@${interaction.user.id}>`)
+            .setThumbnail(interaction.user.displayAvatarURL({ dynamic: true, size: 1024 }))
+            .setColor(embeds.SUCCESS_COLOR)
+            .setTimestamp();
+
+        try {
+            const uuid = await getUUIDFromName(name);
+            const profileData = await getProfileSkyblockLevelByUUID(uuid, profileName);
+            mainEmbed.addFields(
+                { name: 'Minecraft Username', value: `**${name}**` },
+                { name: 'Skyblock Profile', value: `**${profileData.profile}**` },
+                { name: 'Skyblock Level', value: `**${profileData.level}**` }
+            )
+        } catch(err) {
+            console.log('Error fetching player data from apply_modal: ', err);
+            interaction.reply({ embeds: [embeds.errorEmbed(`Unable to fetch your player data!\nPlease make sure you input the correct data.`)], flags: 64 });
+        }
+
+        const buttonRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId(`accept_request`).setLabel('Accept').setStyle(ButtonStyle.Success),
+            new ButtonBuilder().setCustomId(`deny_request`).setLabel('Deny').setStyle(ButtonStyle.Danger)
+        );
+
+        try {
+            const appMessage = await logsChannel.send({ embeds: [mainEmbed], components: [buttonRow] });
+
+            await updateOpenApplications({
+                guildDataId: guildDBData.discord_server_id,
+                logsMessageId: appMessage.id,
+                discordUserId: interaction.user.id,
+                minecraftName: name,
+                profileName: profileName
+            });
+
+            await interaction.reply({ embeds: [embeds.successEmbed('Guild application submitted!\nA staff member will review shortly.', interaction.guild.members.me.displayHexColor)], flags: 64 });
+        } catch (err) {
+            console.error(err);
+            await interaction.reply({ embeds: [embeds.errorEmbed('Failed to apply.\nPlease ping staff for help.')], flags: 64 });
+            await logsChannel.send({ embeds: [embeds.errorEmbed(`Failed to apply user <@${interaction.user.id}>.`, err.message)] });
+        }
+    }
+}

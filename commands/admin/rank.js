@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { updateGuildData, getGuildData, updateGuildColumn } = require('../../utils/guildDataManager.js');
-const { getGuildById } = require('../../utils/hypixelAPIManager.js');
+const { getGuildData, updateGuildColumn } = require('../../utils/DBManagers/guildDataManager.js');
+const { getGuildById } = require('../../utils/APIManagers/hypixelAPIManager.js');
 const embeds = require('../../interactions/embeds.js');
 
 /**
@@ -70,7 +70,7 @@ module.exports = {
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Linked **${hypixelRank}** to <@&${discordRole.id}> successfully!${requirementText}`, interaction.guild.members.me.displayHexColor)], allowedMentions: { roles: [] } });
             } catch(err) {
                 console.error("Failed running '/rank link': ", err);
-                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while linking roles.")] });
+                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while linking roles.", err.message)] });
             } 
         }
 
@@ -89,7 +89,7 @@ module.exports = {
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Unlinked **${hypixelRank}** from it's discord role successfully!`, interaction.guild.members.me.displayHexColor)], allowedMentions: { roles: [] } });
             } catch(err) {
                 console.error("Failed running '/rank unlink': ", err);
-                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while unlinking roles.")] });
+                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while unlinking roles.", err.message)] });
             } 
         }
 
@@ -114,7 +114,7 @@ module.exports = {
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Updated the **${hypixelRank}** level requirement to **${newRequirement}**.`, interaction.guild.members.me.displayHexColor)] });
             } catch(err) {
                 console.error("Failed running '/rank updatereq': ", err);
-                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while updating requirement.")] });
+                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while updating requirement.", err.message)] });
             } 
         }
 
@@ -180,7 +180,7 @@ module.exports = {
                     });
                 } catch(err) {
                     console.error("An error occured while clearing all roles in '/rank clearroleall: ", err);
-                    await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while clearing all rank related roles.")] });
+                    await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while clearing all rank related roles.", err.message)] });
                 } 
             }
         }

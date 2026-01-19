@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
-const { getGuildData, updateGuildColumn } = require('../../utils/guildDataManager.js');
-const { sendButtonMessage, editBotMessage } = require('../../utils/interactionHelpers.js');
+const { getGuildData, updateGuildColumn } = require('../../utils/DBManagers/guildDataManager.js');
 const embeds = require('../../interactions/embeds.js');
 
 /**
@@ -49,13 +48,20 @@ module.exports = {
             const message = interaction.options.getString('message');
             const channel = interaction.options.getChannel('channel');
             if(!guildDBData?.verification_role) return interaction.editReply({ embeds: [embeds.errorEmbed('Verification role does not exist!')] });
+            if(!channel || !channel.isTextBased()) return interaction.editReply({ embeds: [embeds.errorEmbed('Please select a **text** channel')] });
+            
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder().setCustomId('verify_button').setLabel('Verify').setStyle(ButtonStyle.Success)
+            );
+                
+            const payload = { content: message, components: [row]};
 
             try {
-                await sendButtonMessage(channel, message, 'verify_button', 'Verify');
+                await channel.send(payload);
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Verification message created successfully in ${channel}`, interaction.guild.members.me.displayHexColor)] });
             } catch(err) {
                 console.error("Failed running '/verification create': ", err);
-                return interaction.editReply({ embeds: [embeds.errorEmbed('Unable to send message in this channel!')] });
+                return interaction.editReply({ embeds: [embeds.errorEmbed('Unable to send message in this channel!', err.message)] });
             }
         }
 
@@ -65,12 +71,15 @@ module.exports = {
             const messageId = interaction.options.getString('id');
             const channel = interaction.options.getChannel('channel');
 
+            if(!channel || !channel.isTextBased()) return interaction.editReply({ embeds: [embeds.errorEmbed('Please select a **text** channel')] });
+
             try {
-                await editBotMessage(channel, message, messageId);
+                const targetMessage = await channel.messages.fetch(messageId);
+            await targetMessage.edit({ content: message, components: targetMessage.components });
                 await interaction.editReply({ embeds: [embeds.successEmbed('Verification message edited!', interaction.guild.members.me.displayHexColor)] });
             } catch {
                 console.error("Failed running '/verification edit': ", err);
-                return interaction.editReply({ embeds: [embeds.errorEmbed('Message not found in this channel')] });
+                return interaction.editReply({ embeds: [embeds.errorEmbed('Message not found in this channel', err.message)] });
             }
         }
 
@@ -85,7 +94,7 @@ module.exports = {
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Verification role set successfully to <@&${verificationRole.id}>!`, interaction.guild.members.me.displayHexColor)], allowedMentions: { roles: [] } });
             } catch(err) {
                 console.error("Failed running '/verification setrole': ", err);
-                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while setting verification role.")] });
+                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while setting verification role.", err.message)] });
             } 
         }
 
@@ -98,7 +107,7 @@ module.exports = {
                 await interaction.editReply({ embeds: [embeds.successEmbed('Set verification role cleared.', interaction.guild.members.me.displayHexColor)] });
             } catch(err) {
                 console.error("Failed running '/verification clearrole': ", err);
-                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while clearing verification role.")] });
+                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while clearing verification role.", err.message)] });
             } 
         }
     }

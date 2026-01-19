@@ -1,5 +1,5 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
-const { createPageEmbed, flattenCommands } = require('../../utils/helpHelpers.js');
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
+const { createPageEmbed, flattenCommands } = require('../../utils/helpBuilders.js');
 const embeds = require('../../interactions/embeds');
 
 /**
