@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const { updateGuildColumn, getGuildData } = require('../../utils/guildDataManager.js');
-const embeds = require('../../interactions/embeds/embeds.js');
+const embeds = require('../../interactions/embeds.js');
 
 /**
  * @command - /unlinkguild

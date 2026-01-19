@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { updateGuildData, getGuildData } = require('../../utils/guildDataManager.js');
-const embeds = require('../../interactions/embeds/embeds.js');
+const embeds = require('../../interactions/embeds.js');
 
 /**
  * @command - /unlinkrole

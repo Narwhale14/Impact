@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits } = require('discord.js');
 const { getGuildData } = require('../../utils/guildDataManager.js');
-const embeds = require('../../interactions/embeds/embeds.js');
+const embeds = require('../../interactions/embeds.js');
 
 /**
  * @command - /editverifymessage

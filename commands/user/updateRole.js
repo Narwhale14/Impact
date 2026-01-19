@@ -3,7 +3,7 @@ const { getGuildData } = require('../../utils/guildDataManager.js');
 const { getLinkedPlayer } = require('../../utils/linkedPlayersManager.js');
 const { getProfileSkyblockLevelByUUID, getMemberInGuildByPlayerUUID } = require('../../utils/hypixelAPIManager.js');
 const { getEligibleRoleId, removeMappedRoles } = require('../../utils/roleHelpers.js');
-const embeds = require('../../interactions/embeds/embeds.js');
+const embeds = require('../../interactions/embeds.js');
 
 /**
  * @command - /updaterole

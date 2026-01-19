@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { getGuildData, updateGuildColumn } = require('../../utils/guildDataManager.js');
 const { getGuildByName } = require('../../utils/hypixelAPIManager.js');
-const embeds = require('../../interactions/embeds/embeds.js');
+const embeds = require('../../interactions/embeds.js');
 
 /**
  * @command - /linkguild

@@ -28,13 +28,8 @@ loadCommands(path.join(__dirname, 'commands'));
 
 // buttons collection init
 client.buttons = new Collection();
-const buttonsPath = path.join(__dirname, 'interactions', 'buttons');
-const buttonFiles = fs.readdirSync(buttonsPath).filter(file => file.endsWith('.js'));
-
-for(const file of buttonFiles) {
-    const button = require(`./interactions/buttons/${file}`);
-    client.buttons.set(button.customId, button);
-}
+const button = require(`./interactions/buttons.js`);
+client.buttons.set(button.customId, button);
 
 // ready event (bot comes online)
 client.once('clientReady', async () => {
