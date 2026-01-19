@@ -42,8 +42,6 @@ async function getGuildData(guild) {
         const guildId = typeof guild === 'string' ? guild : guild?.id;
         const guildName = typeof guild === 'object' ? guild.name : null;
 
-        console.log(`${guildId}, ${guildName}`);
-
         const res = await pool.query(
             `SELECT * FROM guild_data WHERE discord_server_id = $1`,
             [guildId]
