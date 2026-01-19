@@ -1,4 +1,6 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
+const { createPageEmbed, flattenCommands } = require('../../utils/helpHelpers.js');
+const embeds = require('../../interactions/embeds');
 
 /**
  * @command - /help
@@ -9,35 +11,63 @@ module.exports = {
         .setName('help')
         .setDescription('Lists all available user commands'),
     async execute(interaction) {
-        const commands = [...interaction.client.commands.values()]
-            .filter(cmd => cmd.adminOnly !== true)
-            .sort((a, b) => a.data.name.localeCompare(b.data.name));
-        
-        const helpEmbed = new EmbedBuilder()
-            .setTitle('List of Commands')
-            .setDescription(`Here's a list of all commands`)
-            .setColor(interaction.guild.members.me.displayHexColor)
-            .setFooter({ text: 'For admin commands, send /helpadmin' });
+        const userType = 'User';
+        const flattenedCommands = [...interaction.client.commands.values()]
+            .sort((a, b) => a.data.name.localeCompare(b.data.name))
+            .filter(cmd => !(cmd.adminOnly === true))
+            .flatMap(flattenCommands);
+        if(flattenedCommands.length === 0) return interaction.reply({ embeds: [embeds.errorEmbed('No user commands found.')] });
 
-        commands.forEach(command => {
-            const subcommands = command.data.options?.filter(option => option.constructor.name === 'SlashCommandSubcommandBuilder');
-            if(subcommands && subcommands.length > 0) {
-                command.data.options.filter(option => option.constructor.name === 'SlashCommandSubcommandBuilder').forEach(sub => { 
-                    helpEmbed.addFields({
-                        name: `/${command.data.name} ${sub.name}`,
-                        value: `${sub.description}`,
-                        inline: false
-                    });
-                });
-            } else {
-                helpEmbed.addFields({
-                    name: `/${command.data.name}}`,
-                    value: command.data.description || 'No description provided',
-                    inline: false
-                });
-            }
+        const fieldsPerPage = 10;
+        const pages = [];
+        for(let i = 0; i < flattenedCommands.length; i += fieldsPerPage) {
+            pages.push(flattenedCommands.slice(i, i + fieldsPerPage));
+        }
+
+        let currentPage = 0;
+
+        const createNavigationRow = () => new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('help_prev')
+                .setLabel('⬅ Prev')
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(currentPage === 0),
+            new ButtonBuilder()
+                .setCustomId('help_next')
+                .setLabel('Next ➡')
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(currentPage === pages.length - 1)
+        );
+
+        const components = pages.length > 1 ? [createNavigationRow()] : [];
+
+        await interaction.reply({
+            embeds: [createPageEmbed(interaction, pages[currentPage], currentPage, pages.length, userType)],
+            components
         });
 
-        await interaction.reply({ embeds: [helpEmbed] });
+        const message = await interaction.fetchReply();
+
+        const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 5 * 60 * 1000 });
+
+        collector.on('collect', async btnInteraction => {
+            if(btnInteraction.user.id !== interaction.user.id) {
+                return btnInteraction.reply({ content: 'You cannot control this help menu.', flags: 64 });
+            }
+
+            if(btnInteraction.customId === 'help_next')
+                currentPage = (currentPage + 1) % pages.length;
+            else if(btnInteraction.customId === 'help_prev')
+                currentPage = (currentPage - 1 + pages.length) % pages.length;
+
+            await btnInteraction.update({
+                embeds: [createPageEmbed(interaction, pages[currentPage], currentPage, pages.length, userType)],
+                components: [createNavigationRow()]
+            });
+        });
+
+        collector.on('end', async () => { 
+            await message.edit({ components: [] })
+        });
     }
 }

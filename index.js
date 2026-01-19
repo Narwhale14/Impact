@@ -28,8 +28,13 @@ loadCommands(path.join(__dirname, 'commands'));
 
 // buttons collection init
 client.buttons = new Collection();
-const button = require(`./interactions/buttons.js`);
-client.buttons.set(button.customId, button);
+const buttonsPath = path.join(__dirname, 'interactions', 'buttons');
+const buttonFiles = fs.readdirSync(buttonsPath).filter(file => file.endsWith('.js'));
+
+for(const file of buttonFiles) {
+    const button = require(`./interactions/buttons/${file}`);
+    client.buttons.set(button.customId, button);
+}
 
 // ready event (bot comes online)
 client.once('clientReady', async () => {
@@ -41,7 +46,7 @@ client.on('interactionCreate', async interaction => {
         const command = client.commands.get(interaction.commandName);
         if (!command) return;
         if(command.adminOnly && !interaction.member.permissions.has(PermissionFlagsBits.Administrator))
-            return interaction.reply({ content: 'This command is restrcited to staff only.', flag: 64 });
+            return interaction.reply({ content: 'This command is restrcited to staff only.', flags: 64 });
 
         try { 
             await command.execute(interaction);

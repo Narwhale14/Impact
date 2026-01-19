@@ -26,7 +26,7 @@ module.exports = {
     },
 
     // error message
-    errorEmbed: (message, title = 'Error') => {
+    errorEmbed: (message, title = 'ERROR') => {
         return new EmbedBuilder()
             .setTitle(title)
             .setDescription(message)

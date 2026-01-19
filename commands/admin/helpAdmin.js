@@ -1,4 +1,6 @@
-const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
+const { createPageEmbed, flattenCommands } = require('../../utils/helpHelpers.js');
+const embeds = require('../../interactions/embeds');
 
 /**
  * @command - /helpadmin
@@ -11,53 +13,63 @@ module.exports = {
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
         adminOnly: true,
     async execute(interaction) {
-        const commands = [...interaction.client.commands.values()]
-            .filter(cmd => cmd.adminOnly === true);
-        
-        const helpEmbed = new EmbedBuilder()
-            .setTitle('List of Admin Commands')
-            .setDescription(`Here's a list of all admin only commands`)
-            .setColor(interaction.guild.members.me.displayHexColor)
-            .setFooter({ text: 'For user commands, send /help' });
+        const userType = 'Admin';
+        const flattenedCommands = [...interaction.client.commands.values()]
+            .sort((a, b) => a.data.name.localeCompare(b.data.name))
+            .filter(cmd => cmd.adminOnly)
+            .flatMap(flattenCommands);
+        if(flattenedCommands.length === 0) return interaction.reply({ embeds: [embeds.errorEmbed('No admin commands found.')] });
 
-        commands.forEach(command => {
-            const options = command.data.options ?? [];
-            const groups = options.filter(option => option.constructor.name === 'SlashCommandSubcommandGroupBuilder');
-            const subs = options.filter(option => option.constructor.name === 'SlashCommandSubcommandBuilder');
+        const fieldsPerPage = 10;
+        const pages = [];
+        for(let i = 0; i < flattenedCommands.length; i += fieldsPerPage) {
+            pages.push(flattenedCommands.slice(i, i + fieldsPerPage));
+        }
 
-            if(groups.length > 0){
-                groups.forEach(group => { 
-                    group.options.forEach(sub => { 
-                        const isDangerous = command.dangerousSubcommands?.includes(`${group.name}.${sub.name}`);
-                        helpEmbed.addFields({
-                            name: `/${command.data.name} ${group.name} ${sub.name}${isDangerous ? ' ⚠️ [DANGEROUS] ' : ''}`,
-                            value: sub.description || 'No description provided',
-                            inline: false
-                        });
-                    });
-                });
-                return;
+        let currentPage = 0;
+
+        const createNavigationRow = () => new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('help_prev')
+                .setLabel('⬅ Prev')
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(currentPage === 0),
+            new ButtonBuilder()
+                .setCustomId('help_next')
+                .setLabel('Next ➡')
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(currentPage === pages.length - 1)
+        );
+
+        const components = pages.length > 1 ? [createNavigationRow()] : [];
+
+        await interaction.reply({
+            embeds: [createPageEmbed(interaction, pages[currentPage], currentPage, pages.length, userType)],
+            components
+        });
+
+        const message = await interaction.fetchReply();
+
+        const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 5 * 60 * 1000 });
+
+        collector.on('collect', async btnInteraction => {
+            if(btnInteraction.user.id !== interaction.user.id) {
+                return btnInteraction.reply({ content: 'You cannot control this help menu.', flags: 64 });
             }
 
-            if(subs.length > 0) {
-                subs.forEach(sub => { 
-                    const isDangerous = command.dangerousSubcommands?.includes(sub.name);
-                    helpEmbed.addFields({
-                        name: `/${command.data.name} ${sub.name}${isDangerous === true ? ' ⚠️ [DANGEROUS] ' : ''}`,
-                        value: `${sub.description}`,
-                        inline: false
-                    });
-                });
-                return;
-            }
-            
-            helpEmbed.addFields({
-                name: `/${command.data.name}${command.dangerous === true ? ' ⚠️ [DANGEROUS] ' : ''}`,
-                value: command.data.description || 'No description provided',
-                inline: false
+            if(btnInteraction.customId === 'help_next')
+                currentPage = (currentPage + 1) % pages.length;
+            else if(btnInteraction.customId === 'help_prev')
+                currentPage = (currentPage - 1 + pages.length) % pages.length;
+
+            await btnInteraction.update({
+                embeds: [createPageEmbed(interaction, pages[currentPage], currentPage, pages.length, userType)],
+                components: [createNavigationRow()]
             });
         });
 
-        await interaction.reply({ embeds: [helpEmbed] });
+        collector.on('end', async () => { 
+            await message.edit({ components: [] })
+        });
     }
 }

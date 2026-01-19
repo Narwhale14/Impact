@@ -93,7 +93,8 @@ async function updateGuildColumn(guild, columnName, value) {
         'hypixel_guild_id',
         'application_channel_id',
         'requests_enabled',
-        'logs_channel_id'
+        'logs_channel_id',
+        'guild_member_role'
     ];
 
     const jsonColumns = ['role_mappings'];
