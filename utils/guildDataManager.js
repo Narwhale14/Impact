@@ -85,7 +85,7 @@ async function getGuildData(guild) {
 async function updateGuildColumn(guild, columnName, value) {
     const guildId = typeof guild === 'string' ? guild : guild?.id;
     const guildName = typeof guild === 'object' ? guild.name : null;
-    let dbValue;
+    let dbValue = value;
 
     const allowedColumns = [
         'verification_role',
@@ -93,7 +93,7 @@ async function updateGuildColumn(guild, columnName, value) {
         'hypixel_guild_id',
         'application_channel_id',
         'requests_enabled',
-        'requests_channel'
+        'logs_channel_id'
     ];
 
     const jsonColumns = ['role_mappings'];
@@ -121,7 +121,7 @@ async function updateGuildColumn(guild, columnName, value) {
             );
         } else {
             await pool.query(
-                `UPDATE guild_data SET ${columnName} = COALESCE($1, ${columnName}) WHERE discord_server_id = $2`,
+                `UPDATE guild_data SET ${columnName} = $1 WHERE discord_server_id = $2`,
                 [dbValue, guildId]
             )
         }

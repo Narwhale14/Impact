@@ -21,9 +21,26 @@ module.exports = {
             .setFooter({ text: 'For user commands, send /help' });
 
         commands.forEach(command => {
-            const subcommands = command.data.options?.filter(option => option.constructor.name === 'SlashCommandSubcommandBuilder');
-            if(subcommands && subcommands.length > 0) {
-                command.data.options.filter(option => option.constructor.name === 'SlashCommandSubcommandBuilder').forEach(sub => { 
+            const options = command.data.options ?? [];
+            const groups = options.filter(option => option.constructor.name === 'SlashCommandSubcommandGroupBuilder');
+            const subs = options.filter(option => option.constructor.name === 'SlashCommandSubcommandBuilder');
+
+            if(groups.length > 0){
+                groups.forEach(group => { 
+                    group.options.forEach(sub => { 
+                        const isDangerous = command.dangerousSubcommands?.includes(`${group.name}.${sub.name}`);
+                        helpEmbed.addFields({
+                            name: `/${command.data.name} ${group.name} ${sub.name}${isDangerous ? ' ⚠️ [DANGEROUS] ' : ''}`,
+                            value: sub.description || 'No description provided',
+                            inline: false
+                        });
+                    });
+                });
+                return;
+            }
+
+            if(subs.length > 0) {
+                subs.forEach(sub => { 
                     const isDangerous = command.dangerousSubcommands?.includes(sub.name);
                     helpEmbed.addFields({
                         name: `/${command.data.name} ${sub.name}${isDangerous === true ? ' ⚠️ [DANGEROUS] ' : ''}`,
@@ -31,13 +48,14 @@ module.exports = {
                         inline: false
                     });
                 });
-            } else {
-                helpEmbed.addFields({
-                    name: `/${command.data.name}${command.dangerous === true ? ' ⚠️ [DANGEROUS] ' : ''}`,
-                    value: command.data.description || 'No description provided',
-                    inline: false
-                });
+                return;
             }
+            
+            helpEmbed.addFields({
+                name: `/${command.data.name}${command.dangerous === true ? ' ⚠️ [DANGEROUS] ' : ''}`,
+                value: command.data.description || 'No description provided',
+                inline: false
+            });
         });
 
         await interaction.reply({ embeds: [helpEmbed] });

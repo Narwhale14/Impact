@@ -6,52 +6,66 @@ const embeds = require('../../interactions/embeds.js');
  * @command - /application
  * guildappchannel stuff
  * 
- * /application setchannel
- * /application clearchannel
+ * /application setapplicationchannel
+ * /application clearapplicationchannel
+ * /application setrequestschannel
+ * /application clearrequestschannel
  */
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('application')
-        .setDescription('Manages guild applications')
+        .setName('applications')
+        .setDescription('Manages server guild applications and mod stuff')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-        .addSubcommand(sub => sub
-            .setName('setchannel')
-            .setDescription('Sets the guild application channel')
-            .addChannelOption(option => option.setName('channel').setDescription('Channel for guild application message').setRequired(true)))
-        .addSubcommand(sub => sub
-            .setName('clearchannel')
-            .setDescription('Clears the guild application channel')),
+        .addSubcommandGroup(group => group.setName('channel').setDescription('Guild application channel')
+            .addSubcommand(sub => sub
+                .setName('set')
+                .setDescription('Sets the guild application channel')
+                .addChannelOption(option => option.setName('channel').setDescription('Channel for guild application message').setRequired(true)))
+            .addSubcommand(sub => sub
+                .setName('clear')
+                .setDescription('Clears connection to the guild application channel')))
+        .addSubcommandGroup(group => group.setName('logs').setDescription('Guild application logs channel subcommand group')
+            .addSubcommand(sub => sub
+                .setName('set')
+                .setDescription('Sets the guild application logs channel')
+                .addChannelOption(option => option.setName('channel').setDescription('Channel for staff to review applications').setRequired(true)))
+            .addSubcommand(sub => sub
+                .setName('clear')
+                .setDescription('Clears connection to the guild application logs channel'))),
         adminOnly: true,
     async execute(interaction) {
-        const subcommand = interaction.options.getSubcommand();
+        const group = interaction.options.getSubcommandGroup();
+        const sub = interaction.options.getSubcommand();
         const guildDBData = await getGuildData(interaction.guild);
 
-        // setchannel subcommand
-        if(subcommand === 'setchannel') {
-            const requestsChannel = interaction.options.getChannel('channel');
+        const channelColumn = group === 'channel' ? 'application_channel_id' : group === 'logs' ? 'logs_channel_id' : null;
+        const channelString = channelColumn === 'application_channel_id' ? 'application channel' : channelColumn === 'logs_channel_id' ? 'requests channel' : null;
+        if(!channelColumn || !channelString) return;
 
-            if(guildDBData?.application_channel_id) return interaction.reply({ embeds: [embeds.errorEmbed(`The guild application channel is already set to <#${guildDBData.guild_channel_id}>.`)] });
-            if(!requestsChannel) return interaction.reply({ embeds: [embeds.errorEmbed('Invalid channel!')] });
+        // apps set subcommand
+        if(sub === 'set') {
+            if(guildDBData?.[channelColumn]) return interaction.reply({ embeds: [embeds.errorEmbed(`Guild ${channelString} is already set to <#${guildDBData[channelColumn]}>.`)] });
+            const channel = interaction.options.getChannel('channel');
+            if(!channel) return interaction.reply({ embeds: [embeds.errorEmbed(`Invalid guild ${channelString}.`)] });
 
             try {
-                await updateGuildColumn(interaction.guild, 'application_channel_id', requestsChannel.id);
-                await interaction.reply({ embeds: [embeds.successEmbed(`Guild application channel set successfully to <#${requestsChannel.id}>!`, interaction.guild.members.me.displayHexColor)] });
+                await updateGuildColumn(interaction.guild, channelColumn, channel.id);
+                await interaction.reply({ embeds: [embeds.successEmbed(`Guild ${channelString} set successfully to <#${channel.id}>!`, interaction.guild.members.me.displayHexColor)] });
             } catch(err) {
-                console.error("Failed running '/applications setchannel': ", err);
-                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while setting application channel.")] });
+                console.error("Failed running '/apps <subcommandGroup> set': ", err);
+                await interaction.editReply({ embeds: [embeds.errorEmbed(`An error occurred while setting guild ${channelString}.`)] });
             } 
         }
 
-        // clearchannel subcommand
-        if(subcommand === 'clearchannel') {
-            if(!guildDBData?.application_channel_id) return interaction.reply({ embeds: [embeds.errorEmbed(`The guild application channel isn't set yet!`)] });
+        if(sub === 'clear') {
+            if(!guildDBData?.[channelColumn]) return interaction.reply({ embeds: [embeds.errorEmbed(`Guild ${channelString} not set yet!`)] });
 
             try {
-                await updateGuildColumn(interaction.guild, 'application_channel_id', null);
-                await interaction.reply({ embeds: [embeds.successEmbed('Set guild application channel cleared.', interaction.guild.members.me.displayHexColor)] });
+                await updateGuildColumn(interaction.guild, channelColumn, null);
+                await interaction.reply({ embeds: [embeds.successEmbed(`Guild ${channelString} connection cleared.`, interaction.guild.members.me.displayHexColor)] });
             } catch(err) {
-                console.error("Failed running '/applications clearchannel': ", err);
-                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while clearing set application channel.")] });
+                console.error("Failed running '/apps <subcommandGroup> clear': ", err);
+                await interaction.editReply({ embeds: [embeds.errorEmbed(`An error occurred while clearing guild ${channelString}.`)] });
             } 
         }
     }
