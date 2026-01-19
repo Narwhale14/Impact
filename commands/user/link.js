@@ -19,7 +19,7 @@ module.exports = {
             const minecraftName = interaction.options.getString('name');
             const discordId = interaction.user.id;
 
-            const guildDBData = await getGuildData(interaction.guild.id);
+            const guildDBData = await getGuildData(interaction.guild);
             if(!guildDBData?.hypixel_guild_id) return interaction.editReply({ embeds: [embeds.guildNotLinked()] });
 
             // fetch player data from API

@@ -15,8 +15,8 @@ async function updateGuildData(guild, { verificationRoleId, roleMappings, hypixe
                 discord_server_name = COALESCE($2, guild_data.discord_server_name),
                 verification_role = COALESCE($3, guild_data.verification_role),
                 role_mappings = COALESCE($4, guild_data.role_mappings),
-                hypixel_guild_id = COALESCE($5, guild_data.hypixel_guild_id)
-                application_channel_id = COALESCE($6, guild_data.application_channel_id),`
+                hypixel_guild_id = COALESCE($5, guild_data.hypixel_guild_id),
+                application_channel_id = COALESCE($6, guild_data.application_channel_id)`,
             [
                 guild.id, 
                 guild.name,
@@ -34,16 +34,31 @@ async function updateGuildData(guild, { verificationRoleId, roleMappings, hypixe
 
 /**
  * Gets a piece of data from the guild_data table
- * @param {*} guildId interaction.guild.id
+ * @param {*} guild interaction.guild
  * @returns the data
  */
-async function getGuildData(guildId) {
+async function getGuildData(guild) {
     try {
+        const guildId = typeof guild === 'string' ? guild : guild?.id;
+        const guildName = typeof guild === 'object' ? guild.name : null;
+
+        console.log(`${guildId}, ${guildName}`);
+
         const res = await pool.query(
             `SELECT * FROM guild_data WHERE discord_server_id = $1`,
             [guildId]
         );
-        return res.rows[0] || null;
+        
+        if(res.rowCount === 0) {
+            await pool.query(
+                `INSERT INTO guild_data (discord_server_id, discord_server_name)
+                VALUES ($1, $2)
+                ON CONFLICT (discord_server_id) DO NOTHING`,
+                [guildId, guildName]
+            );
+        }
+
+        return res.rows[0];
     } catch(err) {
         console.error('DB error in getGuildData: ', err);
         throw err;
@@ -64,16 +79,17 @@ async function updateGuildColumn(guild, columnName, value) {
 
         if(!guildId) throw new Error('nullifyGuildColumn called without valid guildId');
 
-        const guildRes = await pool.query(
+        const res = await pool.query(
             `SELECT 1 FROM guild_data WHERE discord_server_id = $1`,
             [guildId]
         );
 
         // creates guild_data entry if didn't exist
-        if(guildRes.rowCount === 0) {
+        if(res.rowCount === 0) {
             await pool.query(
                 `INSERT INTO guild_data (discord_server_id, discord_server_name, ${columnName})
-                VALUES ($1, $2, $3)`,
+                VALUES ($1, $2, $3)
+                ON CONFLICT (discord_server_id) DO NOTHING`,
                 [guildId, guildName, value]
             );
         } else {

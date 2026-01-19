@@ -3,13 +3,13 @@ const { updateGuildColumn, getGuildData } = require('../../utils/guildDataManage
 const embeds = require('../../interactions/embeds.js');
 
 /**
- * @command - /guildappchannel
+ * @command - /applications
  * guildappchannel stuff
  */
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('guildapplication')
-        .setDescription('Manages channel to use for guild rank and application requests')
+        .setName('application')
+        .setDescription('Manages guild applications')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addSubcommand(sub => sub
             .setName('setchannel')
@@ -21,30 +21,35 @@ module.exports = {
         adminOnly: true,
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
-        const requestsChannel = interaction.options.getChannel('channel');
+        const guildDBData = await getGuildData(interaction.guild);
 
-        try {
-            const guildDBData = await getGuildData(interaction.guild.id);
+        // setchannel subcommand
+        if(subcommand === 'setchannel') {
+            const requestsChannel = interaction.options.getChannel('channel');
 
-            if(subcommand === 'setchannel') {
-                if(guildDBData?.application_channel_id) return interaction.reply({ embeds: [embeds.errorEmbed(`The guild application channel is already set to <#${guildDBData.guild_channel_id}>.`)] });
-                if(!requestsChannel) return interaction.reply({ embeds: [embeds.errorEmbed('Invalid channel!')] });
+            if(guildDBData?.application_channel_id) return interaction.reply({ embeds: [embeds.errorEmbed(`The guild application channel is already set to <#${guildDBData.guild_channel_id}>.`)] });
+            if(!requestsChannel) return interaction.reply({ embeds: [embeds.errorEmbed('Invalid channel!')] });
 
+            try {
                 await updateGuildColumn(interaction.guild, 'application_channel_id', requestsChannel.id);
                 await interaction.reply({ embeds: [embeds.successEmbed(`Guild application channel set successfully to <#${requestsChannel.id}>!`, interaction.guild.members.me.displayHexColor)] });
-            }
+            } catch(err) {
+                console.error("Failed running '/applications setchannel': ", err);
+                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while setting application channel.")] });
+            } 
+        }
 
-            if(subcommand === 'clearchannel') {
-                if(!guildDBData?.application_channel_id) return interaction.reply({ embeds: [embeds.errorEmbed(`The guild application channel isn't set yet!`)] });
+        // clearchannel subcommand
+        if(subcommand === 'clearchannel') {
+            if(!guildDBData?.application_channel_id) return interaction.reply({ embeds: [embeds.errorEmbed(`The guild application channel isn't set yet!`)] });
 
+            try {
                 await updateGuildColumn(interaction.guild, 'application_channel_id', null);
                 await interaction.reply({ embeds: [embeds.successEmbed('Set guild application channel cleared.', interaction.guild.members.me.displayHexColor)] });
-            }
-
-            
-        } catch(err) {
-            console.log('Error updating guild data: ', err);
-            await interaction.reply({ embeds: [embeds.errorEmbed("An error occured while running /guildapplication")] });
+            } catch(err) {
+                console.error("Failed running '/applications clearchannel': ", err);
+                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while clearing set application channel.")] });
+            } 
         }
     }
 }

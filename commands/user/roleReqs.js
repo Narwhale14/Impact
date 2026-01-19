@@ -13,7 +13,7 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
         try {
-            const guildDBData = await getGuildData(interaction.guild.id);
+            const guildDBData = await getGuildData(interaction.guild);
             if(!guildDBData?.hypixel_guild_id) return interaction.editReply({ embeds: [embeds.guildNotLinked()] });
 
             const roleMappings = guildDBData.role_mappings;
