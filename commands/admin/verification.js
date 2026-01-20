@@ -57,7 +57,7 @@ module.exports = {
             );
 
             try {
-                const referenceMessage = await channel.messages.fetch(messageId);
+                const referenceMessage = await interaction.channel.messages.fetch(messageId);
                 await channel.send({ content: referenceMessage.content, components: [row] });
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Verification message created successfully in ${channel}`, interaction.guild.members.me.displayHexColor)] });
             } catch(err) {
