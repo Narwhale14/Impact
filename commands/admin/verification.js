@@ -21,7 +21,7 @@ module.exports = {
         .addSubcommand(sub => sub
             .setName('create')
             .setDescription('Create a verification message')
-            .addStringOption(option => option.setName('message').setDescription('Verification message content').setRequired(true))
+            .addStringOption(option => option.setName('message_id').setDescription('Message to reference').setRequired(true))
             .addChannelOption(option => option.setName('channel').setDescription('Channel to send the message in').setRequired(true)))
         .addSubcommand(sub => sub
             .setName('edit')
@@ -45,25 +45,23 @@ module.exports = {
 
         // create subcommand
         if(subcommand === 'create') {
-            const message = interaction.options.getString('message');
+            const messageId = interaction.options.getString('message_id');
             const channel = interaction.options.getChannel('channel');
             if(!guildDBData?.verification_role) 
                 return interaction.editReply({ embeds: [embeds.errorEmbed('Verification role does not exist!')] });
             if(!channel || !channel.isTextBased()) 
                 return interaction.editReply({ embeds: [embeds.errorEmbed('Please select a **text** channel')] });
-            
+
             const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder().setCustomId('verify_button').setLabel('Verify').setStyle(ButtonStyle.Success)
             );
-                
-            const payload = { content: message, components: [row]};
 
             try {
-                await channel.send(payload);
+                const referenceMessage = await channel.messages.fetch(messageId);
+                await channel.send({ content: referenceMessage.content, components: [row] });
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Verification message created successfully in ${channel}`, interaction.guild.members.me.displayHexColor)] });
             } catch(err) {
-                console.error("Failed running '/verification create': ", err);
-                return interaction.editReply({ embeds: [embeds.errorEmbed('Unable to send message in this channel!', err.message)] });
+                return interaction.editReply({ embeds: [embeds.errorEmbed('Reference message ID invalid or not in this channel!')] });
             }
         }
 
