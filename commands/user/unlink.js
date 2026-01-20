@@ -12,7 +12,8 @@ module.exports = {
             const targetUser = interaction.options.getUser('user') ?? interaction.user;
 
             const existingLink = await getLinkedPlayer(targetUser.id);
-            if(!existingLink) return interaction.editReply({ embeds: [embeds.errorEmbed(`**${targetUser.username}** is not linked to any Hypixel Account.`)] });
+            if(!existingLink) 
+                return interaction.editReply({ embeds: [embeds.errorEmbed(`**${targetUser.username}** is not linked to any Hypixel Account.`)] });
 
             // delete from db
             await deleteLinkedPlayer(targetUser.id);

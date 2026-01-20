@@ -15,6 +15,8 @@ const embeds = require('../../interactions/embeds.js');
  * /applications message edit
  * /applications setrole
  * /applications clearrole
+ * /applications setping
+ * /applications clearping
  */
 module.exports = {
     data: new SlashCommandBuilder()
@@ -59,7 +61,14 @@ module.exports = {
             .addRoleOption(option => option.setName('role').setDescription('Guild member role').setRequired(true)))
         .addSubcommand(sub => sub
             .setName('clearrole')
-            .setDescription('Clears verification role')),
+            .setDescription('Clears verification role'))
+        .addSubcommand(sub => sub
+            .setName('setping')
+            .setDescription('Sets the role to ping for applications & requests')
+            .addRoleOption(option => option.setName('role').setDescription('Ping role').setRequired(true)))
+        .addSubcommand(sub => sub
+            .setName('clearping')
+            .setDescription('Clears application & requests ping role')),
         adminOnly: true,
     async execute(interaction) {
         await interaction.deferReply();
@@ -94,7 +103,8 @@ module.exports = {
 
         // apps channel/logs clear subcommands
         if(sub === 'clear') {
-            if(!guildDBData?.[channelColumn]) return interaction.editReply({ embeds: [embeds.errorEmbed(`Guild ${channelString} not set yet!`)] });
+            if(!guildDBData?.[channelColumn]) 
+                return interaction.editReply({ embeds: [embeds.errorEmbed(`Guild ${channelString} not set yet!`)] });
 
             try {
                 await updateGuildColumn(interaction.guild, channelColumn, null);
@@ -127,9 +137,14 @@ module.exports = {
             if(sub === 'create') {
                 const message = interaction.options.getString('message');
                 const channel = interaction.options.getChannel('channel');
-                if(!guildDBData?.guild_member_role) return interaction.editReply({ embeds: [embeds.errorEmbed('Application role does not exist!\nPlease run: \`/applications setrole <role>\`')] });
-                if(!guildDBData?.logs_channel_id) return interaction.editReply({ embeds: [embeds.errorEmbed('No channel set to send application notifications to!\nPlease run: \`/applications log set <channel>\`')] });
-                if(!channel || !channel.isTextBased()) return interaction.editReply({ embeds: [embeds.errorEmbed('Please select a **text** channel')] });
+                if(!guildDBData?.guild_member_role) 
+                    return interaction.editReply({ embeds: [embeds.errorEmbed('Application role does not exist!\nPlease run: \`/applications setrole <role>\`')] });
+                if(!guildDBData?.logs_channel_id) 
+                    return interaction.editReply({ embeds: [embeds.errorEmbed('No channel set to send application notifications to!\nPlease run: \`/applications log set <channel>\`')] });
+                if(!guildDBData?.application_ping) 
+                    return interaction.editReply({ embeds: [embeds.errorEmbed(`Application ping role does not exist!\nPlease run: \`/applications setping <role>\``)] });
+                if(!channel || !channel.isTextBased()) 
+                    return interaction.editReply({ embeds: [embeds.errorEmbed('Please select a **text** channel')] });
                 
                 const row = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('apply_button').setLabel('Apply').setStyle(ButtonStyle.Success)
@@ -152,7 +167,8 @@ module.exports = {
                 const messageId = interaction.options.getString('id');
                 const channel = interaction.options.getChannel('channel');
 
-                if(!channel || !channel.isTextBased()) return interaction.editReply({ embeds: [embeds.errorEmbed('Please select a **text** channel')] });
+                if(!channel || !channel.isTextBased()) 
+                    return interaction.editReply({ embeds: [embeds.errorEmbed('Please select a **text** channel')] });
     
                 try {
                     const targetMessage = await channel.messages.fetch(messageId);
@@ -167,9 +183,11 @@ module.exports = {
 
         // applications setrole subcommand
         if(sub === 'setrole') {
-            if(guildDBData?.guild_member_role) return interaction.reply({ embeds: [embeds.errorEmbed(`The application role is already set to <@&${guildDBData.verification_role}>.`)], allowedMentions: { roles: [] }});
+            if(guildDBData?.guild_member_role) 
+                return interaction.reply({ embeds: [embeds.errorEmbed(`The application role is already set to <@&${guildDBData.verification_role}>.`)], allowedMentions: { roles: [] }});
             const applyRole = interaction.options.getRole('role');
-            if(!applyRole) return interaction.editReply({ embeds: [embeds.errorEmbed('Invalid role!')] });
+            if(!applyRole) 
+                return interaction.editReply({ embeds: [embeds.errorEmbed('Invalid role!')] });
 
             try {
                 await updateGuildColumn(interaction.guild, 'guild_member_role', applyRole.id);
@@ -182,7 +200,8 @@ module.exports = {
 
         // applications clearrole subcommand
         if(sub === 'clearrole') {
-            if(!guildDBData?.guild_member_role) return interaction.editReply({ embeds: [embeds.errorEmbed('Application role does not exist!')] });
+            if(!guildDBData?.guild_member_role) 
+                return interaction.editReply({ embeds: [embeds.errorEmbed('Application role does not exist!')] });
             
             try {
                 await updateGuildColumn(interaction.guild, 'guild_member_role', null);
@@ -190,6 +209,37 @@ module.exports = {
             } catch(err) {
                 console.error("Failed running '/application clearrole': ", err);
                 await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while clearing application role.", err.message)] });
+            } 
+        }
+
+        // applications setping subcommand
+        if(sub === 'setping') {
+            if(guildDBData?.application_ping) 
+                return interaction.reply({ embeds: [embeds.errorEmbed(`The application ping role is already set to <@&${guildDBData.application_ping}>.`)], allowedMentions: { roles: [] }});
+            const applyRole = interaction.options.getRole('role');
+            if(!applyRole) 
+                return interaction.editReply({ embeds: [embeds.errorEmbed('Invalid role!')] });
+
+            try {
+                await updateGuildColumn(interaction.guild, 'application_ping', applyRole.id);
+                await interaction.editReply({ embeds: [embeds.successEmbed(`Application ping role set successfully to <@&${applyRole.id}>!`, interaction.guild.members.me.displayHexColor)], allowedMentions: { roles: [] } });
+            } catch(err) {
+                console.error("Failed running '/applications setping': ", err);
+                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while setting application ping role.", err.message)] });
+            } 
+        }
+
+        // applications clearping subcommand
+        if(sub === 'clearping') {
+            if(!guildDBData?.application_ping) 
+                return interaction.editReply({ embeds: [embeds.errorEmbed('Application ping role does not exist!')] });
+            
+            try {
+                await updateGuildColumn(interaction.guild, 'application_ping', null);
+                await interaction.editReply({ embeds: [embeds.successEmbed('Set application ping role cleared.', interaction.guild.members.me.displayHexColor)] });
+            } catch(err) {
+                console.error("Failed running '/application clearping': ", err);
+                await interaction.editReply({ embeds: [embeds.errorEmbed("An error occurred while clearing application ping role.", err.message)] });
             } 
         }
     }

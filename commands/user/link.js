@@ -20,11 +20,13 @@ module.exports = {
             const discordId = interaction.user.id;
 
             const guildDBData = await getGuildData(interaction.guild);
-            if(!guildDBData?.hypixel_guild_id) return interaction.editReply({ embeds: [embeds.guildNotLinked()] });
+            if(!guildDBData?.hypixel_guild_id) 
+                return interaction.editReply({ embeds: [embeds.guildNotLinked()] });
 
             // fetch player data from API
             const player = await getPlayerByName(minecraftName);
-            if(!player) return interaction.editReply({ embeds: [embeds.errorEmbed(`Minecraft player with username **${minecraftName}** does not exist!`)] });
+            if(!player) 
+                return interaction.editReply({ embeds: [embeds.errorEmbed(`Minecraft player with username **${minecraftName}** does not exist!`)] });
 
             const playerDiscord = player.socialMedia?.links?.DISCORD;
             if(!playerDiscord) 
@@ -41,7 +43,8 @@ module.exports = {
 
             // check if player is in guild
             const member = await getMemberInGuildByPlayerUUID(player.uuid);
-            if (!member) return interaction.editReply({ embeds: [embeds.errorEmbed(`Minecraft player with username **${minecraftName} is not in any guild.`)] });
+            if (!member) 
+                return interaction.editReply({ embeds: [embeds.errorEmbed(`Minecraft player with username **${minecraftName} is not in any guild.`)] });
             if(member.guild_id !== guildDBData.hypixel_guild_id)
                 return interaction.editReply({ embeds: [embeds.errorEmbed(`You are not in the guild linked to the server.`)] });
 

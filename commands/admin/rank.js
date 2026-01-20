@@ -161,7 +161,8 @@ module.exports = {
                     let removedRoles = 0;
 
                     for(const member of interaction.guild.members.cache.values()) {
-                        if(!member.roles.cache.has(guildDBData.verification_role)) continue;
+                        if(!member.roles.cache.has(guildDBData.verification_role)) 
+                            continue;
 
                         const rolesToRemove = Object.values(roleMappings)
                             .map(r => r.discord_role_id)

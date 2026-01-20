@@ -47,8 +47,10 @@ module.exports = {
         if(subcommand === 'create') {
             const message = interaction.options.getString('message');
             const channel = interaction.options.getChannel('channel');
-            if(!guildDBData?.verification_role) return interaction.editReply({ embeds: [embeds.errorEmbed('Verification role does not exist!')] });
-            if(!channel || !channel.isTextBased()) return interaction.editReply({ embeds: [embeds.errorEmbed('Please select a **text** channel')] });
+            if(!guildDBData?.verification_role) 
+                return interaction.editReply({ embeds: [embeds.errorEmbed('Verification role does not exist!')] });
+            if(!channel || !channel.isTextBased()) 
+                return interaction.editReply({ embeds: [embeds.errorEmbed('Please select a **text** channel')] });
             
             const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder().setCustomId('verify_button').setLabel('Verify').setStyle(ButtonStyle.Success)
@@ -71,7 +73,8 @@ module.exports = {
             const messageId = interaction.options.getString('id');
             const channel = interaction.options.getChannel('channel');
 
-            if(!channel || !channel.isTextBased()) return interaction.editReply({ embeds: [embeds.errorEmbed('Please select a **text** channel')] });
+            if(!channel || !channel.isTextBased()) 
+                return interaction.editReply({ embeds: [embeds.errorEmbed('Please select a **text** channel')] });
 
             try {
                 const targetMessage = await channel.messages.fetch(messageId);
@@ -85,9 +88,11 @@ module.exports = {
 
         // setrole subcommand
         if(subcommand == 'setrole') {
-            if(guildDBData?.verification_role) return interaction.reply({ embeds: [embeds.errorEmbed(`The verification role is already set to <@&${guildDBData.verification_role}>.`)], allowedMentions: { roles: [] }});
+            if(guildDBData?.verification_role) 
+                return interaction.reply({ embeds: [embeds.errorEmbed(`The verification role is already set to <@&${guildDBData.verification_role}>.`)], allowedMentions: { roles: [] }});
             const verificationRole = interaction.options.getRole('role');
-            if(!verificationRole) return interaction.editReply({ embeds: [embeds.errorEmbed('Invalid role!')] });
+            if(!verificationRole) 
+                return interaction.editReply({ embeds: [embeds.errorEmbed('Invalid role!')] });
 
             try {
                 await updateGuildColumn(interaction.guild, 'verification_role', verificationRole.id);
@@ -100,7 +105,8 @@ module.exports = {
 
         // clearrole subcommand
         if(subcommand == 'clearrole') {
-            if(!guildDBData?.verification_role) return interaction.editReply({ embeds: [embeds.errorEmbed('Verification role does not exist!')] });
+            if(!guildDBData?.verification_role) 
+                return interaction.editReply({ embeds: [embeds.errorEmbed('Verification role does not exist!')] });
 
             try {
                 await updateGuildColumn(interaction.guild, 'verification_role', null);

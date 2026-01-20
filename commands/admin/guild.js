@@ -48,7 +48,8 @@ module.exports = {
 
         // unlink subcommand
         if(subcommand === 'unlink') {
-            if(!guildDBData?.hypixel_guild_id) return interaction.editReply({ embeds: [embeds.guildNotLinked()] });
+            if(!guildDBData?.hypixel_guild_id) 
+                return interaction.editReply({ embeds: [embeds.guildNotLinked()] });
             
             const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder().setCustomId(`confirm_unlink:${interaction.user.id}`).setLabel('Confirm').setStyle(ButtonStyle.Danger),

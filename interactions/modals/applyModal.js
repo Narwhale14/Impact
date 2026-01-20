@@ -43,6 +43,7 @@ module.exports = {
 
         try {
             const appMessage = await logsChannel.send({ 
+                content: `<@&${guildDBData.application_ping}>`,
                 embeds: [mainEmbed], 
                 components: [buttonRow],
                 allowedMentions: { roles: [] }
@@ -56,11 +57,11 @@ module.exports = {
                 profileName: profileName
             });
 
-            await interaction.reply({ embeds: [embeds.successEmbed('Guild application submitted!\nA staff member will review shortly.', interaction.guild.members.me.displayHexColor, 'SUBMITTED')], flags: 64 });
+            return interaction.reply({ embeds: [embeds.successEmbed('Guild application submitted!\nA staff member will review shortly.', interaction.guild.members.me.displayHexColor, 'SUBMITTED')], flags: 64 });
         } catch (err) {
             console.error(err);
-            await interaction.reply({ embeds: [embeds.errorEmbed('Failed to apply.\nPlease ping staff for help.')], flags: 64 });
             await logsChannel.send({ embeds: [embeds.errorEmbed(`Failed to apply user <@${interaction.user.id}>.`, err.message)] });
+            return interaction.reply({ embeds: [embeds.errorEmbed('Failed to apply.\nPlease ping staff for help.')], flags: 64 });
         }
     }
 }

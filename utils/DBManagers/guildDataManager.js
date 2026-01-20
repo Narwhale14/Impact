@@ -5,7 +5,7 @@ const { pool } = require('../../database.js');
  * @param {*} guild guild object (interaction.guild)
  * @param {*} param1 table contents
  */
-async function updateGuildData(guild, { verificationRoleId, roleMappings, hypixelGuildId, applicationChannelId, requestsEnabled, requestsChannel }) {
+async function updateGuildData(guild, { verificationRoleId, roleMappings, hypixelGuildId, applicationChannelId, requestsEnabled, logsChannelId, guildMemberRoleId, applicationPingId }) {
     try {
         await pool.query(
             `INSERT INTO guild_data (
@@ -16,7 +16,9 @@ async function updateGuildData(guild, { verificationRoleId, roleMappings, hypixe
                 hypixel_guild_id, 
                 application_channel_id, 
                 requests_enabled, 
-                requests_channel)
+                logs_channel_id,
+                guild_member_role,
+                application_ping)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             ON CONFLICT (discord_server_id)
             DO UPDATE SET
@@ -26,7 +28,9 @@ async function updateGuildData(guild, { verificationRoleId, roleMappings, hypixe
                 hypixel_guild_id = COALESCE($5, guild_data.hypixel_guild_id),
                 application_channel_id = COALESCE($6, guild_data.application_channel_id),
                 requests_enabled = COALESCE($7, guild_data.requests_enabled),
-                requests_channel = COALESCE($8, requests_channel)`,
+                logs_channel_id = COALESCE($8, guild_data.logs_channel_id),
+                guild_member_role = COALESCE($9, guild_data.guild_member_role),
+                application_ping = COALESCE($10, guild_data.application_ping)`,
             [
                 guild.id, 
                 guild.name,
@@ -35,7 +39,9 @@ async function updateGuildData(guild, { verificationRoleId, roleMappings, hypixe
                 hypixelGuildId || null,
                 applicationChannelId || null,
                 requestsEnabled || false,
-                requestsChannel || null
+                logsChannelId || null,
+                guildMemberRoleId || null,
+                applicationPingId || null
             ]
         );
     } catch(err) {
@@ -94,7 +100,8 @@ async function updateGuildColumn(guild, columnName, value) {
         'application_channel_id',
         'requests_enabled',
         'logs_channel_id',
-        'guild_member_role'
+        'guild_member_role',
+        'application_ping'
     ];
 
     const jsonColumns = ['role_mappings'];

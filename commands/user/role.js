@@ -32,7 +32,8 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
 
         const guildDBData = await getGuildData(interaction.guild);
-        if(!guildDBData?.hypixel_guild_id) return interaction.editReply({ embeds: [embeds.guildNotLinked()] });
+        if(!guildDBData?.hypixel_guild_id) 
+            return interaction.editReply({ embeds: [embeds.guildNotLinked()] });
 
         // update subcommand
         if(subcommand === 'update') {
@@ -59,7 +60,8 @@ module.exports = {
                  */
 
                 const eligibleRole = getEligibleRoleId(guildDBData.role_mappings, level);
-                if(!eligibleRole) return interaction.editReply({ embeds: [embeds.errorEmbed(`No Discord role available for profile **${profile}** (level: ${level})`)] });
+                if(!eligibleRole) 
+                    return interaction.editReply({ embeds: [embeds.errorEmbed(`No Discord role available for profile **${profile}** (level: ${level})`)] });
 
                 const memberDiscord = await interaction.guild.members.fetch(interaction.user.id);
                 await removeMappedRoles(memberDiscord, guildDBData.role_mappings);
