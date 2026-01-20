@@ -3,6 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const { Client, GatewayIntentBits, Collection, PermissionFlagsBits } = require('discord.js');
 const embeds = require('./interactions/embeds');
+import os from "os";
+
+console.log("BOT STARTED ON:", os.hostname());
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]

@@ -1,4 +1,4 @@
-const { EmbedBuilder, userMention } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const { getGuildData } = require('../../utils/DBManagers/guildDataManager.js');
 const { getOpenApplication, deleteOpenApplication } = require('../../utils/DBManagers/openApplicationsManager.js');
 const embeds = require('../embeds.js');
