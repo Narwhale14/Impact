@@ -6,11 +6,11 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false },
     max: 10, // optional: maximum number of connections
     idleTimeoutMillis: 10000, // 30s, optional: how long a client can sit idle
-    connectionTimeoutMillis: 2000, // 2s, optional: wait for connection before failing
+    connectionTimeoutMillis: 10000, // 2s, optional: wait for connection before failing
 });
 
 // Handle unexpected errors on idle clients
-pool.on('error', (err) => {
+pool.on('error', err => {
     console.error('Unexpected error on idle DB client', err);
 });
 

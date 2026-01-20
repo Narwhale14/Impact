@@ -20,7 +20,7 @@ module.exports = {
             .setTitle(`New Application!`)
             .setDescription(`Application for <@${interaction.user.id}>`)
             .setThumbnail(interaction.user.displayAvatarURL({ dynamic: true, size: 1024 }))
-            .setColor(embeds.SUCCESS_COLOR)
+            .setColor(embeds.WARNING_COLOR)
             .setTimestamp();
 
         try {
@@ -37,12 +37,16 @@ module.exports = {
         }
 
         const buttonRow = new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId(`accept_request`).setLabel('Accept').setStyle(ButtonStyle.Success),
-            new ButtonBuilder().setCustomId(`deny_request`).setLabel('Deny').setStyle(ButtonStyle.Danger)
+            new ButtonBuilder().setCustomId(`accept_request_button`).setLabel('Accept').setStyle(ButtonStyle.Success),
+            new ButtonBuilder().setCustomId(`deny_request_button`).setLabel('Deny').setStyle(ButtonStyle.Danger)
         );
 
         try {
-            const appMessage = await logsChannel.send({ embeds: [mainEmbed], components: [buttonRow] });
+            const appMessage = await logsChannel.send({ 
+                embeds: [mainEmbed], 
+                components: [buttonRow],
+                allowedMentions: { roles: [] }
+            });
 
             await updateOpenApplications({
                 guildDataId: guildDBData.id,
@@ -52,7 +56,7 @@ module.exports = {
                 profileName: profileName
             });
 
-            await interaction.reply({ embeds: [embeds.successEmbed('Guild application submitted!\nA staff member will review shortly.', interaction.guild.members.me.displayHexColor)], flags: 64 });
+            await interaction.reply({ embeds: [embeds.successEmbed('Guild application submitted!\nA staff member will review shortly.', interaction.guild.members.me.displayHexColor, 'SUBMITTED')], flags: 64 });
         } catch (err) {
             console.error(err);
             await interaction.reply({ embeds: [embeds.errorEmbed('Failed to apply.\nPlease ping staff for help.')], flags: 64 });
