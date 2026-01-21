@@ -16,6 +16,9 @@ module.exports = {
         const name = interaction.fields.getTextInputValue('minecraft_user_input');
         const profileName = interaction.fields.getTextInputValue('skyblock_profile_name');
 
+        const findOpenApplication = getOpenApplicationFromPlayerName(name);
+        if(!findOpenApplication) return interaction.reply({ embeds: [embeds.errorEmbed('This player already has an application up!')], flags: 64 });
+
         const mainEmbed = new EmbedBuilder()
             .setTitle(`New Application!`)
             .setDescription(`Application for <@${interaction.user.id}>`)
@@ -25,7 +28,7 @@ module.exports = {
 
         try {
             const uuid = await getUUIDFromName(name);
-            const inGuild = await isPlayerInGuild(uuid);
+            const inGuild = await isPlayerInGuild(uuid, guildDBData?.hypixel_guild_id);
             if(inGuild) return interaction.reply({ embeds: [embeds.errorEmbed('You are already in the guild!')], flags: 64 });
 
             const profileData = await getProfileSkyblockLevelByUUID(uuid, profileName);

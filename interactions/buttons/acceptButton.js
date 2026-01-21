@@ -26,7 +26,6 @@ module.exports = {
                 .setColor(embeds.SUCCESS_COLOR);
 
             await interaction.message.edit({ embeds: [updateEmbed], components: [] })
-            await interaction.reply({ embeds: [embeds.successEmbed('Accepted user into the guild!', interaction.guild.members.me.displayHexColor)] });
 
             const user = await interaction.client.users.fetch(app.discord_user_id);
 

@@ -93,13 +93,14 @@ async function getProfileSkyblockLevelByUUID(playerUUID, profileName) {
 
 async function isPlayerInGuild(playerUUID, guildId) {
     try {
-        const response = await fetch('https://api.hypixel.net/guild?id=${guildId}&key=${process.env.HYPIXEL_API_KEY}');
+        const response = await fetch(`https://api.hypixel.net/guild?id=${guildId}&key=${process.env.HYPIXEL_API_KEY}`);
         const data = await response.json();
 
-        if(!data.success || data.guild) return false;
+        if(!data.success || !data.guild) return false;
 
-        return data.guild.members.som(member => member.uuid === playerUUID);
+        return data.guild.members.some(member => member.uuid === playerUUID);
     } catch(err) {
+        console.log(err);
         return false;
     }
 }

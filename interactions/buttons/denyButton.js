@@ -16,11 +16,10 @@ module.exports = {
                 .setTitle(`❌ Denied`)
                 .setColor(embeds.ERROR_COLOR);
 
-            await interaction.message.edit({ embeds: [updateEmbed], components: [] })
-            await interaction.reply({ embeds: [embeds.successEmbed('Denied user.', interaction.guild.members.me.displayHexColor, 'DENIED')] });
+            await interaction.message.edit({ embeds: [updateEmbed], components: [] });
 
             const user = await interaction.client.users.fetch(app.discord_user_id);
-            
+    
             try {
                 await user.send({
                     embeds: [

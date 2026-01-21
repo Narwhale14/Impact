@@ -46,4 +46,18 @@ async function getOpenApplication(logsMessageId) {
     }
 }
 
-module.exports = { updateOpenApplications, deleteOpenApplication, getOpenApplication };
+async function getOpenApplicationFromPlayerName(playerName) {
+    try {
+        const res = await pool.query(
+            `SELECT * FROM open_applications WHERE minecraft_name = $1`,
+            [playerName]
+        );
+
+        return res.rows[0] || null;
+    } catch(err) {
+        console.error(`DB error in getOpenApplicationFromPlayerName: attempted to fetch playerName=${playerName}: `, err);
+        throw err;
+    }
+}
+
+module.exports = { updateOpenApplications, deleteOpenApplication, getOpenApplication, getOpenApplicationFromPlayerName };
