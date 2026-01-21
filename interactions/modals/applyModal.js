@@ -1,6 +1,6 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { getGuildData } = require('../../utils/DBManagers/guildDataManager.js');
-const { getProfileSkyblockLevelByUUID } = require('../../utils/APIManagers/hypixelAPIManager.js');
+const { getProfileSkyblockLevelByUUID, isPlayerInGuild, isPlayerInGuild } = require('../../utils/APIManagers/hypixelAPIManager.js');
 const { getUUIDFromName } = require('../../utils/APIManagers/minecraftAPIManager.js');
 const { updateOpenApplications } = require('../../utils/DBManagers/openApplicationsManager.js');
 const embeds = require('../embeds.js');
@@ -25,6 +25,9 @@ module.exports = {
 
         try {
             const uuid = await getUUIDFromName(name);
+            const inGuild = await isPlayerInGuild(uuid);
+            if(inGuild) return interaction.reply({ embeds: [embeds.errorEmbed('You are already in the guild!')], flags: 64 });
+
             const profileData = await getProfileSkyblockLevelByUUID(uuid, profileName);
             mainEmbed.addFields(
                 { name: 'Minecraft Username', value: `**${name}**` },
@@ -59,7 +62,6 @@ module.exports = {
 
             return interaction.reply({ embeds: [embeds.successEmbed('Guild application submitted!\nA staff member will review shortly.', interaction.guild.members.me.displayHexColor, 'SUBMITTED')], flags: 64 });
         } catch (err) {
-            console.error(err);
             await logsChannel.send({ embeds: [embeds.errorEmbed(`Failed to apply user <@${interaction.user.id}>.`, err.message)] });
             return interaction.reply({ embeds: [embeds.errorEmbed('Failed to apply.\nPlease ping staff for help.')], flags: 64 });
         }
