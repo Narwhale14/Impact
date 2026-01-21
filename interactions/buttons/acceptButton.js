@@ -35,11 +35,11 @@ module.exports = {
                     embeds: [
                         new EmbedBuilder()
                             .setTitle('Guild Application Result')
-                            .setDescription('✅ Your application was accepted!\nPlease consider the following:')
+                            .setDescription('✅ Your application was accepted!\nPlease consider completing the following:')
                             .addFields(
-                                { name: 'Link in-game profile with:', value: '`/link <profile name>`'},
-                                { name: 'Update role based on guild rank:', value: '`/role update`'},
-                                { name: 'View rank requirements', value: '/role reqs'})
+                                { name: 'Link in-game profile with:', value: '`/link <profile name>`' },
+                                { name: 'Update role based on guild rank:', value: '`/role update`' },
+                                { name: 'View rank requirements', value: '/role reqs' })
                             .setColor(embeds.SUCCESS_COLOR)
                             .setThumbnail(interaction.user.displayAvatarURL({ size: 256 }))
                             .setTimestamp()

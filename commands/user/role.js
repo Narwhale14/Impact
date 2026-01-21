@@ -71,6 +71,18 @@ module.exports = {
                 let success = `Successfully updated role to <@&${eligibleRole.discord_role_id}> based on Skyblock profile **${profile}** (level: ${level})!`;
                 if(inGameRank !== eligibleRole.rank && guildDBData.role_mappings[inGameRank] && guildDBData.requests_enabled === true) {
                     success += `\n\nCurrent in-game guild rank is **${inGameRank}**, expect to be changed to **${eligibleRole.rank}** soon!`;
+                    const logsChannel = interaction.guild.channels.cache.get(guildDBData?.logs_channel_id);
+                    if(!logsChannel || !logsChannel.isTextBased())
+                        return interaction.reply({ embeds: [embeds.errorEmbed(`Unable to notify staff about your role update\nPlease ping a staff for help.`)], flags: 64 });
+                        
+                    const logsEmbed = new EmbedBuilder()
+                        .setTitle(`New Role Update!`)
+                        .setDescription(`<@${interaction.user.id}>'s role has upgraded to <@&${eligibleRole.discord_role_id}>\n When available, promote them in-game to **${eligibleRole.rank}**`)
+                        .setThumbnail(interaction.user.displayAvatarURL({ dynamic: true, size: 1024 }))
+                        .setColor(embeds.SUCCESS_COLOR)
+                        .setTimestamp();
+
+                    logsChannel.send({ embeds: [logsEmbed], allowedMentions: { roles: [] } });
                 } else if(guildDBData.role_mappings[inGameRank] && guildDBData.requests_enabled === false) {
                     success += `\n\nThis guild has Hypixel rank update notifications disabled, try asking someone capable in-game to get it!`
                 }

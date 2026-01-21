@@ -55,7 +55,7 @@ module.exports = {
                 .setName('staffping')
                 .setDescription('Clears application & requests ping role')))
         .addSubcommand(sub => sub
-            .setName('logrolerequests')
+            .setName('rolerequests')
             .setDescription('Turns on role requests (no ping)')
             .addBooleanOption(option => option.setName('on').setDescription('On/Off').setRequired(true)))
         .addSubcommand(sub => sub
@@ -135,6 +135,9 @@ module.exports = {
                 if(!guildDBData?.[channelColumn]) 
                     return interaction.editReply({ embeds: [embeds.errorEmbed(`Guild ${channelString} not set yet!`)] });
 
+                if(sub === 'logs' && guildDBData?.requests_enabled)
+                    await updateGuildColumn(interaction.guild, 'requests_enabled', false);
+
                 try {
                     await updateGuildColumn(interaction.guild, channelColumn, null);
                     await interaction.editReply({ embeds: [embeds.successEmbed(`Guild ${channelString} connection cleared.`, interaction.guild.members.me.displayHexColor)] });
@@ -171,7 +174,7 @@ module.exports = {
             }
         }
 
-        if(sub === 'logrolerequests') {
+        if(sub === 'rolerequests') {
             const rolesToggle = interaction.options.getBoolean('on');
             if(guildDBData?.requests_enabled === rolesToggle) 
                 return interaction.editReply({ embeds: [embeds.errorEmbed(`Already toggled to **${rolesToggle}**!`)] });
