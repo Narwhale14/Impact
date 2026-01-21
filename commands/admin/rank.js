@@ -150,7 +150,8 @@ module.exports = {
             }
 
             if(buttonInteraction.customId === `confirm_clear:${interaction.user.id}`) {
-                if(!guildDBData?.verification_role) return buttonInteraction.update({ embeds: [embeds.verificationRoleMissing()] });
+                await buttonInteraction.deferReply();
+                if(!guildDBData?.verification_role) return buttonInteraction.editReply({ embeds: [embeds.verificationRoleMissing()] });
 
                 const roleMappings = guildDBData.role_mappings || {};
 
@@ -175,7 +176,7 @@ module.exports = {
                         }
                     }
 
-                    return buttonInteraction.update({ 
+                    return buttonInteraction.editReply({ 
                         embeds: [embeds.successEmbed(`Cleared rank roles from **${affectedMembers}** verified users.\nTotal roles removed: **${removedRoles}**`, interaction.guild.members.me.displayHexColor)], 
                         components: [] 
                     });
