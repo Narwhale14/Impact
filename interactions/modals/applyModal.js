@@ -1,6 +1,6 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { getGuildData } = require('../../utils/DBManagers/guildDataManager.js');
-const { getProfileSkyblockLevelByUUID, isPlayerInGuild, isPlayerInGuild } = require('../../utils/APIManagers/hypixelAPIManager.js');
+const { getProfileSkyblockLevelByUUID, isPlayerInGuild } = require('../../utils/APIManagers/hypixelAPIManager.js');
 const { getUUIDFromName } = require('../../utils/APIManagers/minecraftAPIManager.js');
 const { updateOpenApplications } = require('../../utils/DBManagers/openApplicationsManager.js');
 const embeds = require('../embeds.js');
