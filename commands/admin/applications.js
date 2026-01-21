@@ -75,7 +75,7 @@ module.exports = {
                 } 
             }
 
-            if(sub === 'role') {
+            if(sub === 'memberrole') {
                 if(guildDBData?.guild_member_role) 
                     return interaction.reply({ embeds: [embeds.errorEmbed(`The guild member role is already set to <@&${guildDBData.guild_member_role}>.`)], allowedMentions: { roles: [] }});
                 const applyRole = interaction.options.getRole('role');
@@ -91,7 +91,7 @@ module.exports = {
                 } 
             }
 
-            if(sub === 'ping') {
+            if(sub === 'staffping') {
                 if(guildDBData?.application_ping) 
                     return interaction.reply({ embeds: [embeds.errorEmbed(`The application ping role is already set to <@&${guildDBData.application_ping}>.`)], allowedMentions: { roles: [] }});
                 const applyRole = interaction.options.getRole('role');
@@ -125,7 +125,7 @@ module.exports = {
                 } 
             }
 
-            if(sub === 'role') {
+            if(sub === 'memberrole') {
                 if(!guildDBData?.guild_member_role) 
                     return interaction.editReply({ embeds: [embeds.errorEmbed('Guild member role does not exist!')] });
                 
@@ -138,7 +138,7 @@ module.exports = {
                 } 
             }
 
-            if(sub === 'ping') {
+            if(sub === 'staffping') {
                 if(!guildDBData?.application_ping) 
                     return interaction.editReply({ embeds: [embeds.errorEmbed('Application ping role does not exist!')] });
                 
