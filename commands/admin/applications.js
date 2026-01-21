@@ -9,12 +9,10 @@ const embeds = require('../../interactions/embeds.js');
  * /app logrolerequests
  * /app sendprompt
  * 
- * /app set channel
  * /app set logs
  * /app set memberrole
  * /app set staffping
  * 
- * /app unset channel
  * /app unset logs
  * /app unset memberrole
  * /app unset staffping
@@ -25,10 +23,6 @@ module.exports = {
         .setDescription('Manages server guild applications and mod stuff')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addSubcommandGroup(group => group.setName('set').setDescription('sets stuff')
-            .addSubcommand(sub => sub
-                .setName('channel')
-                .setDescription('Sets the guild application channel')
-                .addChannelOption(option => option.setName('channel').setDescription('Channel for guild application message').setRequired(true)))
             .addSubcommand(sub => sub
                 .setName('logs')
                 .setDescription('Sets the guild application logs channel')
@@ -42,9 +36,6 @@ module.exports = {
                 .setDescription('Sets the role to ping staff for applications & requests')
                 .addRoleOption(option => option.setName('role').setDescription('Ping role').setRequired(true))))
         .addSubcommandGroup(group => group.setName('unset').setDescription('unsets stuff')
-            .addSubcommand(sub => sub
-                .setName('channel')
-                .setDescription('Clears connection to the guild application channel'))
             .addSubcommand(sub => sub
                 .setName('logs')
                 .setDescription('Clears connection to the guild application logs channel'))
@@ -69,30 +60,18 @@ module.exports = {
         const sub = interaction.options.getSubcommand();
         const guildDBData = await getGuildData(interaction.guild);
 
-        // for indentical sub commands in groups 'channel' and 'log'
-        let channelColumn = null;
-        let channelString = null;
-
-        if(sub === 'channel') {
-            channelColumn = 'application_channel_id';
-            channelString = 'application channel';
-        } else if(sub === 'logs') {
-            channelColumn = 'logs_channel_id';
-            channelString = 'logs channel';
-        }
-
         // set subcommands
         if(group === 'set') {
-            if(sub === 'logs' || sub === 'channel') {
+            if(sub === 'logs') {
                 const channel = interaction.options.getChannel('channel');
-                if(!channel) return interaction.editReply({ embeds: [embeds.errorEmbed(`Invalid guild ${channelString}.`)] });
+                if(!channel || !channel.isTextBased()) return interaction.editReply({ embeds: [embeds.errorEmbed(`Invalid discord channel.`)] });
 
                 try {
-                    await updateGuildColumn(interaction.guild, channelColumn, channel.id);
-                    await interaction.editReply({ embeds: [embeds.successEmbed(`Guild ${channelString} set successfully to <#${channel.id}>!`, interaction.guild.members.me.displayHexColor)] });
+                    await updateGuildColumn(interaction.guild, 'logs_channel_id', channel.id);
+                    await interaction.editReply({ embeds: [embeds.successEmbed(`Guild logs channel set successfully to <#${channel.id}>!`, interaction.guild.members.me.displayHexColor)] });
                 } catch(err) {
-                    console.error("Failed running '/app set (logs || channel)': ", err);
-                    await interaction.editReply({ embeds: [embeds.errorEmbed(`An error occurred while setting guild ${channelString}.`, err.message)] });
+                    console.error("Failed running '/app set logs': ", err);
+                    await interaction.editReply({ embeds: [embeds.errorEmbed(`An error occurred while setting guild logs channel.`, err.message)] });
                 } 
             }
 
@@ -131,19 +110,18 @@ module.exports = {
 
         // apps channel/logs clear subcommands
         if(group === 'unset') {
-            if(sub === 'logs' || sub === 'channel') {
-                if(!guildDBData?.[channelColumn]) 
-                    return interaction.editReply({ embeds: [embeds.errorEmbed(`Guild ${channelString} not set yet!`)] });
-
-                if(sub === 'logs' && guildDBData?.requests_enabled)
+            if(sub === 'logs') {
+                if(!guildDBData?.logs_channel_id) 
+                    return interaction.editReply({ embeds: [embeds.errorEmbed(`Guild logs channel not set yet!`)] });
+                if(guildDBData?.requests_enabled)
                     await updateGuildColumn(interaction.guild, 'requests_enabled', false);
 
                 try {
-                    await updateGuildColumn(interaction.guild, channelColumn, null);
-                    await interaction.editReply({ embeds: [embeds.successEmbed(`Guild ${channelString} connection cleared.`, interaction.guild.members.me.displayHexColor)] });
+                    await updateGuildColumn(interaction.guild, 'logs_channel_id', null);
+                    await interaction.editReply({ embeds: [embeds.successEmbed(`Guild logs channel connection cleared.`, interaction.guild.members.me.displayHexColor)] });
                 } catch(err) {
                     console.error("Failed running '/apps <subcommandGroup> clear': ", err);
-                    await interaction.editReply({ embeds: [embeds.errorEmbed(`An error occurred while clearing guild ${channelString}.`, err.message)] });
+                    await interaction.editReply({ embeds: [embeds.errorEmbed(`An error occurred while clearing guild logs channel.`, err.message)] });
                 } 
             }
 

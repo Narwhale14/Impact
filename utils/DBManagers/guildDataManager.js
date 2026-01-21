@@ -5,7 +5,7 @@ const { pool } = require('../../database.js');
  * @param {*} guild guild object (interaction.guild)
  * @param {*} param1 table contents
  */
-async function updateGuildData(guild, { verificationRoleId, roleMappings, hypixelGuildId, applicationChannelId, requestsEnabled, logsChannelId, guildMemberRoleId, applicationPingId }) {
+async function updateGuildData(guild, { verificationRoleId, roleMappings, hypixelGuildId, requestsEnabled, logsChannelId, guildMemberRoleId, applicationPingId }) {
     try {
         await pool.query(
             `INSERT INTO guild_data (
@@ -14,30 +14,27 @@ async function updateGuildData(guild, { verificationRoleId, roleMappings, hypixe
                 verification_role, 
                 role_mappings, 
                 hypixel_guild_id, 
-                application_channel_id, 
                 requests_enabled, 
                 logs_channel_id,
                 guild_member_role,
                 application_ping)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             ON CONFLICT (discord_server_id)
             DO UPDATE SET
                 discord_server_name = COALESCE($2, guild_data.discord_server_name),
                 verification_role = COALESCE($3, guild_data.verification_role),
                 role_mappings = COALESCE($4, guild_data.role_mappings),
                 hypixel_guild_id = COALESCE($5, guild_data.hypixel_guild_id),
-                application_channel_id = COALESCE($6, guild_data.application_channel_id),
-                requests_enabled = COALESCE($7, guild_data.requests_enabled),
-                logs_channel_id = COALESCE($8, guild_data.logs_channel_id),
-                guild_member_role = COALESCE($9, guild_data.guild_member_role),
-                application_ping = COALESCE($10, guild_data.application_ping)`,
+                requests_enabled = COALESCE($6, guild_data.requests_enabled),
+                logs_channel_id = COALESCE($7, guild_data.logs_channel_id),
+                guild_member_role = COALESCE($8, guild_data.guild_member_role),
+                application_ping = COALESCE($9, guild_data.application_ping)`,
             [
                 guild.id, 
                 guild.name,
                 verificationRoleId || null, 
                 roleMappings ? JSON.stringify(roleMappings) : null,
                 hypixelGuildId || null,
-                applicationChannelId || null,
                 requestsEnabled || false,
                 logsChannelId || null,
                 guildMemberRoleId || null,
@@ -97,7 +94,6 @@ async function updateGuildColumn(guild, columnName, value) {
         'verification_role',
         'role_mappings',
         'hypixel_guild_id',
-        'application_channel_id',
         'requests_enabled',
         'logs_channel_id',
         'guild_member_role',
