@@ -43,7 +43,7 @@ module.exports = {
 
         try {
             const appMessage = await logsChannel.send({ 
-                content: `<@&${guildDBData.application_ping}>`,
+                content: `<@${guildDBData.application_ping}>`,
                 embeds: [mainEmbed], 
                 components: [buttonRow],
                 allowedMentions: { roles: [] }

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const { getGuildData, updateGuildColumn } = require('../../utils/DBManagers/guildDataManager.js');
 const embeds = require('../../interactions/embeds.js');
 
@@ -7,8 +7,7 @@ const embeds = require('../../interactions/embeds.js');
  * directly edits a verification message in a specific channel by ID and channel
  * can also set/clear verification role
  * 
- * /verification create
- * /verification edit
+ * /verification send
  * /verification delete
  * /verification setrole
  * /verification clearrole
@@ -16,19 +15,12 @@ const embeds = require('../../interactions/embeds.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('verification')
-        .setDescription('Manage verification messages')
+        .setDescription('initialize and create verifcation message')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addSubcommand(sub => sub
-            .setName('create')
-            .setDescription('Create a verification message')
-            .addStringOption(option => option.setName('message_id').setDescription('Message to reference').setRequired(true))
-            .addChannelOption(option => option.setName('channel').setDescription('Channel to send the message in').setRequired(true)))
-        .addSubcommand(sub => sub
-            .setName('edit')
-            .setDescription('Edits a verification message')
-            .addStringOption(option => option.setName('message').setDescription('Verification message content').setRequired(true))
-            .addChannelOption(option => option.setName('channel').setDescription('Channel to send the message in').setRequired(true))
-            .addStringOption(option => option.setName('id').setDescription('Verification message ID').setRequired(true)))
+            .setName('send')
+            .setDescription('Sends a verification prompt')
+            .addChannelOption(option => option.setName('channel').setDescription('Channel to send the prompt in').setRequired(true)))
         .addSubcommand(sub => sub
             .setName('clearrole')
             .setDescription('Clears verification role'))
@@ -43,9 +35,8 @@ module.exports = {
 
         const guildDBData = await getGuildData(interaction.guild);
 
-        // create subcommand
-        if(subcommand === 'create') {
-            const messageId = interaction.options.getString('message_id');
+        // send subcommand
+        if(subcommand === 'send') {
             const channel = interaction.options.getChannel('channel');
             if(!guildDBData?.verification_role) 
                 return interaction.editReply({ embeds: [embeds.errorEmbed('Verification role does not exist!')] });
@@ -56,31 +47,16 @@ module.exports = {
                 new ButtonBuilder().setCustomId('verify_button').setLabel('Verify').setStyle(ButtonStyle.Success)
             );
 
+            const verifyEmbed = new EmbedBuilder()
+                .setTitle(`Verification`)
+                .setDescription(`Gain access to the rest of the server!`)
+                .setColor(interaction.guild.members.me.displayHexColor)
+
             try {
-                const referenceMessage = await interaction.channel.messages.fetch(messageId);
-                await channel.send({ content: referenceMessage.content, components: [row] });
+                await channel.send({ embeds: [verifyEmbed], components: [row] });
                 await interaction.editReply({ embeds: [embeds.successEmbed(`Verification message created successfully in ${channel}`, interaction.guild.members.me.displayHexColor)] });
             } catch(err) {
                 return interaction.editReply({ embeds: [embeds.errorEmbed('Reference message ID invalid or not in this channel!')] });
-            }
-        }
-
-        // edit subcommand
-        if(subcommand == 'edit') {
-            const message = interaction.options.getString('message');
-            const messageId = interaction.options.getString('id');
-            const channel = interaction.options.getChannel('channel');
-
-            if(!channel || !channel.isTextBased()) 
-                return interaction.editReply({ embeds: [embeds.errorEmbed('Please select a **text** channel')] });
-
-            try {
-                const targetMessage = await channel.messages.fetch(messageId);
-            await targetMessage.edit({ content: message, components: targetMessage.components });
-                await interaction.editReply({ embeds: [embeds.successEmbed('Verification message edited!', interaction.guild.members.me.displayHexColor)] });
-            } catch {
-                console.error("Failed running '/verification edit': ", err);
-                return interaction.editReply({ embeds: [embeds.errorEmbed('Message not found in this channel', err.message)] });
             }
         }
 

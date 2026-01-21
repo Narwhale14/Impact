@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { Client, GatewayIntentBits, Collection, PermissionFlagsBits } = require('discord.js');
 const embeds = require('./interactions/embeds');
-import os from "os";
+const os = require('os');
 
 console.log("BOT STARTED ON:", os.hostname());
 
